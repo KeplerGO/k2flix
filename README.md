@@ -1,16 +1,16 @@
 k2flix
 ======
-Creates quicklook movies or animated gifs from the pixel data obtained
-by NASA's Kepler/K2 spacecraft.
+Create a beautiful quicklook movie or animated gif from 
+a Target Pixel File (TPF) produced by NASA's Kepler/K2 spacecraft.
 
 Example usage
 -------------
-`k2flix http://archive.stsci.edu/missions/kepler/target_pixel_files/0007/000757076/kplr000757076-2010174085026_lpd-targ.fits.gz`
+```Shell
+k2flix kplr-tpf.fits.gz
+```
 
-Dependencies
-------------
-* `numpy`
-* `matplotlib`
-* `imageio`
-* `astropy`
-* `progressbar`
+License
+-------
+Copyright 2015 Geert Barentsen and contributors.
+
+k2flix is free software made available under the MIT License. For details see the LICENSE file.
