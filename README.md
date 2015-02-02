@@ -1,23 +1,29 @@
 k2flix
 ======
-Create a beautiful quicklook movie or animated gif from 
-a Target Pixel File (TPF) produced by NASA's Kepler/K2 spacecraft.
+Creates beautiful quicklook animated gifs or mp4 movies from the pixel data
+("target pixel files") produced by NASA's Kepler/K2 spacecraft.
 
 Installation
 ------------
-```Shell
+If you have a working installation of Python on your system, you can install k2flix using pip:
+```
 pip install git+https://github.com/barentsen/k2flix
 ```
 
 Usage
 -----
-Converting a single target pixel file to an animated gif:
-```Shell
+Converting a Kepler pixel file to an animated gif:
+```
 $ k2flix tpf-filename.fits.gz
 ```
 
+Converting a Kepler pixel file to an MPEG-4 movie:
+```
+$ k2flix -o movie.mp4 tpf-filename.fits.gz
+```
+
 Printing the full usage information:
-```Shell
+```
 $ k2flix --help
 usage: k2flix [-h] [-o filename] [--start IDX] [--stop IDX] [--step STEP]
               [--fps FPS] [--dpi DPI] [--min_percent MIN_PERCENT]
