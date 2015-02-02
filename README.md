@@ -1,6 +1,6 @@
 # K2flix
 
-**Create beautiful quicklook movies from the data produced by NASA's Kepler spacecraft.**
+**Create beautiful quicklook movies from the pixel data observed by NASA's Kepler spacecraft.**
 
 It is always useful to inspect scientific measurements *by eye*
 before applying sophisticated data analysis algorithms.
