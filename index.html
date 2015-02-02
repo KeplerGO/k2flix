@@ -1,63 +1,86 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <title>K2flix by barentsen</title>
 
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-
-    <title>k2flix by barentsen</title>
   </head>
-
   <body>
-    <header>
-      <div class="inner">
-        <h1>k2flix</h1>
-        <h2>Creates quicklook movies or animated gifs from the pixel data obtained by NASA&#39;s Kepler/K2 spacecraft.</h2>
-        <a href="https://github.com/barentsen/k2flix" class="button"><small>View project on</small> GitHub</a>
-      </div>
-    </header>
+    <div class="wrapper">
+      <header>
+        <h1>K2flix</h1>
+        <p>Create beautiful quicklook movies from the pixel data observed by NASA&#39;s Kepler spacecraft</p>
 
-    <div id="content-wrapper">
-      <div class="inner clearfix">
-        <section id="main-content">
-          <h1>
-<a id="k2flix" class="anchor" href="#k2flix" aria-hidden="true"><span class="octicon octicon-link"></span></a>k2flix</h1>
+        <p class="view"><a href="https://github.com/barentsen/k2flix">View the Project on GitHub <small>barentsen/k2flix</small></a></p>
 
-<p>Creates beautiful quicklook animated gifs or mp4 movies from the pixel data
-("target pixel files") produced by NASA's Kepler/K2 spacecraft.</p>
 
-<h2>
-<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
+        <ul>
+          <li><a href="https://github.com/barentsen/k2flix/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/barentsen/k2flix/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/barentsen/k2flix">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="k2flix" class="anchor" href="#k2flix" aria-hidden="true"><span class="octicon octicon-link"></span></a>K2flix</h1>
+
+<p><strong>Create beautiful quicklook movies from the pixel data observed by NASA's Kepler spacecraft.</strong></p>
+
+<p>It is always useful to inspect scientific measurements <em>by eye</em>
+before applying sophisticated data analysis algorithms.
+This simple tool makes it easy to convert the CCD pixel data
+obtained by <a href="http://kepler.nasa.gov">NASA's Kepler space telescope</a>
+into beautiful movies for human inspection.
+The tool takes the spacecraft's <em>Target Pixel Files</em> (TPF) as input,
+which are publically available from the 
+<a href="https://archive.stsci.edu/missions/kepler/target_pixel_files/">Kepler</a>
+and the <a href="https://archive.stsci.edu/missions/k2/target_pixel_files/">K2</a>
+data archives.
+The output are beautifully contrast-stretched animated gifs or MPEG-4 movies.</p>
+
+<h3>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h3>
 
 <p>If you have a working installation of Python on your system, you can install k2flix using pip:</p>
 
 <pre><code>pip install git+https://github.com/barentsen/k2flix
 </code></pre>
 
-<p>At present the tool has only been tested under Linux.  Get in touch if you encounter issues on OS X or Windows.</p>
+<p>Alternatively, you can clone the repository and install from source:</p>
 
-<h2>
-<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
+<pre><code>$ git clone https://github.com/barentsen/k2flix.git
+$ cd k2flix
+$ python setup.py install
+</code></pre>
+
+<p>K2flix has only been tested under Linux at present.  Get in touch if you encounter issues on OS X or Windows.</p>
+
+<h3>
+<a id="using-k2flix" class="anchor" href="#using-k2flix" aria-hidden="true"><span class="octicon octicon-link"></span></a>Using k2flix</h3>
 
 <p>Converting a Kepler pixel file to an animated gif:</p>
 
-<pre><code>$ k2flix tpf-filename.fits.gz
+<pre><code>$ k2flix tpf-file.fits.gz
 </code></pre>
 
 <p>Converting a Kepler pixel file to an MPEG-4 movie:</p>
 
-<pre><code>$ k2flix -o movie.mp4 tpf-filename.fits.gz
+<pre><code>$ k2flix -o movie.mp4 tpf-file.fits.gz
 </code></pre>
 
-<p>Printing the full usage information:</p>
+<p>K2flix supports reading from web URLs, so you can generate a movie directly from the data archive:</p>
+
+<pre><code>$ k2flix https://archive.stsci.edu/missions/k2/target_pixel_files/c1/201400000/00000/ktwo201400022-c01_lpd-targ.fits.gz
+</code></pre>
+
+<p>To see all the options, use the <code>--help</code> argument to see the full usage information:</p>
 
 <pre><code>$ k2flix --help
 usage: k2flix [-h] [-o filename] [--start IDX] [--stop IDX] [--step STEP]
@@ -89,31 +112,34 @@ optional arguments:
   --cmap colormap_name  matplotlib color map name (default: gray)
 </code></pre>
 
-<h2>
-<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h2>
+<h3>
+<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributing</h3>
+
+<p>To report bugs and request features, please use the <a href="https://github.com/barentsen/k2flix/issues">issue tracker</a>. Code contributions are very welcome.</p>
+
+<h3>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h3>
 
 <p>Copyright 2015 Geert Barentsen.</p>
 
-<p>k2flix is free software made available under the MIT License. For details see the LICENSE file.</p>
-        </section>
-
-        <aside id="sidebar">
-          <a href="https://github.com/barentsen/k2flix/zipball/master" class="button">
-            <small>Download</small>
-            .zip file
-          </a>
-          <a href="https://github.com/barentsen/k2flix/tarball/master" class="button">
-            <small>Download</small>
-            .tar.gz file
-          </a>
-
-          <p class="repo-owner"><a href="https://github.com/barentsen/k2flix"></a> is maintained by <a href="https://github.com/barentsen">barentsen</a>.</p>
-
-          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
-        </aside>
-      </div>
+<p>K2flix is free software made available under the MIT License. For details see the LICENSE file.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/barentsen">barentsen</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
     </div>
+    <script src="javascripts/scale.fix.js"></script>
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-69171-6");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
 
-  
   </body>
 </html>
