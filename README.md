@@ -11,6 +11,6 @@ k2flix kplr-tpf.fits.gz
 
 License
 -------
-Copyright 2015 Geert Barentsen and contributors.
+Copyright 2015 Geert Barentsen.
 
 k2flix is free software made available under the MIT License. For details see the LICENSE file.
