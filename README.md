@@ -9,6 +9,7 @@ If you have a working installation of Python on your system, you can install k2f
 ```
 pip install git+https://github.com/barentsen/k2flix
 ```
+At present the tool has only been tested under Linux.  Get in touch if you encounter issues on OS X or Windows.
 
 Usage
 -----
