@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-""""Creates movies or animated gifs from the pixel data obtained Kepler/K2
+""""Create movies or animated gifs from Kepler Target Pixel Files.
 
 Author: Geert Barentsen
 """
@@ -44,49 +44,58 @@ class TargetPixelFile(object):
         self.filename = filename
         self.hdulist = fits.open(filename)
         self.no_frames = len(self.hdulist[1].data['FLUX'])
-        self.target = self.hdulist[0].header['OBJECT']
 
-    def epoch2timestamp(self, epoch):
-        """Returns the ISO timestamp for a given epoch.
+    @property
+    def target(self):
+        return self.hdulist[0].header['OBJECT']
+
+    @property
+    def ra(self):
+        return self.hdulist[0].header['RA_OBJ']
+
+    @property
+    def dec(self):
+        return self.hdulist[0].header['DEC_OBJ']
+
+    def timestamp(self, frame):
+        """Returns the ISO timestamp for a given frame number.
 
         Parameters
         ----------
-        epoch : int
-            Refers to the index of the image in the file,
-            starting from zero.
+        frame : int
+            Index of the image in the file, starting from zero.
 
         Returns
         -------
         timestamp : str
             ISO-formatted timestamp "YYYY-MM-DD HH:MM:SS"
         """
-        # Warning: we are using barycentric julian date!
-        # TODO: correct for barycentric frame?
-        # See Kepler Archive Manual Sect. 2.3.2
-        time_value = self.hdulist[1].data['TIME'][epoch]
+        # Note: we are using barycentric julian date;
+        # see Kepler Archive Manual Sect. 2.3.2
+        time_value = self.hdulist[1].data['TIME'][frame]
         if np.isnan(time_value):
-            raise BadKeplerData('epoch {0}: empty time value'.format(epoch))
+            raise BadKeplerData('frame {0}: empty time value'.format(frame))
         bjd = (time_value
                + self.hdulist[1].header['BJDREFI']
                + self.hdulist[1].header['BJDREFF'])
         t = Time(bjd, format='jd')
         return t.iso
 
-    def get_flux(self, epoch=0):
-        flux = self.hdulist[1].data['FLUX'][epoch]
+    def get_flux(self, frame=0):
+        flux = self.hdulist[1].data['FLUX'][frame]
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
             if np.all(np.isnan(flux)) or np.all(flux < 1e-5):
-                raise BadKeplerData('epoch {0}: empty frame'.format(epoch))
+                raise BadKeplerData('frame {0}: empty image'.format(frame))
         return flux
 
-    def get_annotated_image(self, epoch=0, dpi=None, vmin=0, vmax=5000,
+    def get_annotated_image(self, frame=0, dpi=None, vmin=0, vmax=5000,
                             cmap='gray',):
-        """Returns the visualization (image array) for a single epoch.
+        """Returns the visualization (image array) for a single frame.
 
         Parameters
         ----------
-        epoch : int
+        frame : int
             Image number in the target pixel file.
 
         dpi : float, optional [dots per inch]
@@ -109,11 +118,11 @@ class TargetPixelFile(object):
             An array of unisgned integers of shape (x, y, 3),
             representing an RBG colour image x px wide and y px high.
         """
-        flx = self.get_flux(epoch)
+        flx = self.get_flux(frame)
         if dpi is None:
             # Twitter timeline requires dimensions between 440x220 and 1024x512
             dpi = 440 / float(flx.shape[0])
-        fontsize = 3 * flx.shape[0]
+        fontsize = 3. * flx.shape[0]
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
             flx[np.isnan(flx) | (flx < 1e-10)] = 1e-10
@@ -125,16 +134,16 @@ class TargetPixelFile(object):
                    cmap=cmap, origin='lower',
                    interpolation='nearest')
         # Annotate the frame
-        margin = 0.02
+        margin = 0.03
         # Target name
         txt = ax.text(margin, margin, self.target,
-                      fontsize=fontsize, color='white',
-                      transform=ax.transAxes)
+                      family="monospace", fontsize=fontsize,
+                      color='white', transform=ax.transAxes)
         # ISO timestamp
-        txt2 = ax.text(1-margin, margin,
-                       self.epoch2timestamp(epoch)[0:16],
-                       ha='right',
-                       fontsize=fontsize, color='white',
+        txt2 = ax.text(1 - margin, margin,
+                       self.timestamp(frame)[0:16],
+                       family="monospace", fontsize=fontsize,
+                       color='white', ha='right',
                        transform=ax.transAxes)
         txt.set_path_effects([path_effects.Stroke(linewidth=fontsize/6.,
                                                   foreground='black'),
@@ -153,9 +162,9 @@ class TargetPixelFile(object):
         pl.close(fig)
         return img
 
-    def mimsave(self, output_fn=None, start=0, stop=-1, step=None, fps=2.,
-                dpi=None, min_percent=1., max_percent=95., cmap='gray',
-                ignore_bad_data=True):
+    def save_movie(self, output_fn=None, start=0, stop=-1, step=None, fps=15.,
+                   dpi=None, min_percent=1., max_percent=95., cmap='gray',
+                   ignore_bad_frames=True):
         """Save an animation.
 
         Parameters
@@ -167,17 +176,19 @@ class TargetPixelFile(object):
             as the input FITS file.
 
         start : int
-            Start epoch.  Default is 0.
+            Number of the first frame in the TPF file to show.  Default is 0.
 
         stop : int
-            Last epoch to show.  Default is -1 (i.e. the last frame).
+            Number of the last frame in the TPF file to show.
+            Default is -1 (i.e. the last frame).
 
         step : int
-            Spacing between epochs.  Default is chosen such that the movie
-            contains 100 frames.
+            Spacing between frames.  Default is to set the stepsize
+            automatically such that the movie contains 100 frames between
+            start and stop.
 
         fps : float (optional)
-            Frames per second.  Default is 2.0.
+            Frames per second.  Default is 15.0.
 
         dpi : float (optional)
             Resolution of the output in dots per Kepler pixel.
@@ -195,7 +206,7 @@ class TargetPixelFile(object):
             The matplotlib color map name.  The default is 'gray',
             can also be e.g. 'gist_heat'.
 
-        ignore_bad_data : boolean
+        ignore_bad_frames : boolean
              If true, any frames which cannot be rendered will be ignored
              without raising a `BadKeplerData` exception.
         """
@@ -214,16 +225,15 @@ class TargetPixelFile(object):
                                        [min_percent, max_percent])
         # Create the movie frames
         viz = []
-        # for idx in np.linspace(0, self.no_frames-1, num=epochs, dtype=int):
         pbar = ProgressBar(maxval=int((stop-start)/step)).start()
         for idx, frameno in enumerate(np.arange(start, stop, step, dtype=int)):
             try:
-                viz.append(self.get_annotated_image(epoch=frameno, dpi=dpi,
+                viz.append(self.get_annotated_image(frame=frameno, dpi=dpi,
                                                     vmin=vmin, vmax=vmax,
                                                     cmap=cmap))
             except BadKeplerData as e:
                 log.debug(e)
-                if not ignore_bad_data:
+                if not ignore_bad_frames:
                     raise e
             pbar.update(idx)
         pbar.finish()
@@ -250,7 +260,7 @@ def k2flix_main(args=None):
     parser.add_argument('--step', type=int, default=None,
                         help='spacing between frames '
                              '(default: output 100 frames)')
-    parser.add_argument('--fps', type=float, default=5.,
+    parser.add_argument('--fps', type=float, default=15.,
                         help='frames per second (default: 5)')
     parser.add_argument('--dpi', type=float, default=None,
                         help='resolution of the output in dots per K2 pixel')
@@ -270,19 +280,19 @@ def k2flix_main(args=None):
 
     for fn in args.filename:
         tpf = TargetPixelFile(fn)
-        tpf.mimsave(output_fn=args.o,
-                    start=args.start,
-                    stop=args.stop,
-                    step=args.step,
-                    fps=args.fps,
-                    dpi=args.dpi,
-                    min_percent=args.min_percent,
-                    max_percent=args.max_percent,
-                    cmap=args.cmap)
+        tpf.save_movie(output_fn=args.o,
+                       start=args.start,
+                       stop=args.stop,
+                       step=args.step,
+                       fps=args.fps,
+                       dpi=args.dpi,
+                       min_percent=args.min_percent,
+                       max_percent=args.max_percent,
+                       cmap=args.cmap)
 
 # Example use
 if __name__ == '__main__':
     fn = ('http://archive.stsci.edu/missions/kepler/target_pixel_files/'
           '0007/000757076/kplr000757076-2010174085026_lpd-targ.fits.gz')
     tpf = TargetPixelFile(fn)
-    tpf.mimsave('/tmp/test.mp4')
+    tpf.save_movie('/tmp/animation.mp4')
