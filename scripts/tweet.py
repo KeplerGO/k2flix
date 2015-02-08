@@ -39,7 +39,7 @@ def generate_tweet(tpf_fn=None, movie_length=96):
         db = KeplerArchiveCrawlerDB('c1-urls.txt')
         tpf_fn = db.random_url()
     log.info('Opening {0}'.format(tpf_fn))
-    tpf = TargetPixelFile(tpf_fn)
+    tpf = TargetPixelFile(tpf_fn, cache=False)
     log.info('KEPMAG = {0}, DIM = {1}'.format(tpf.hdulist[0].header['KEPMAG'],
                                               tpf.hdulist[1].header['TDIM5']))
     # Files contain occasional bad frames, so we make multiple attempts
@@ -81,7 +81,6 @@ def generate_tweet(tpf_fn=None, movie_length=96):
 def post_tweet(status, gif):
     """Post an animated gif and associated status message to Twitter."""
     twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-    # response = twitter.update_status_with_media(status=status, media=open(gif, 'rb'))
     upload_response = twitter.upload_media(media=open(gif, 'rb'))
     response = twitter.update_status(status=status, media_ids=upload_response['media_id'])
     log.info(response)
@@ -94,7 +93,7 @@ if __name__ == '__main__':
         attempt_no += 1
         try:
             status, gif, tpf = generate_tweet()
-            #twitter, response = post_tweet(status, gif)
+            twitter, response = post_tweet(status, gif)
             break
         except Exception as e:
             log.warning(e)

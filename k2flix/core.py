@@ -42,10 +42,14 @@ class TargetPixelFile(object):
     ----------
     filename : str
         Path of the pixel file.
+
+    cache : boolean
+        If the file name is a URL, this specifies whether or not to save the
+        file locally in Astropy’s download cache. (default: True)
     """
-    def __init__(self, filename, min_percent=1., max_percent=95.):
+    def __init__(self, filename, cache=True):
         self.filename = filename
-        self.hdulist = fits.open(filename)
+        self.hdulist = fits.open(filename, cache=cache)
         self.no_frames = len(self.hdulist[1].data['FLUX'])
 
     @property
