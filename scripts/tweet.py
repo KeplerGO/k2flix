@@ -19,7 +19,7 @@ from k2flix.crawler import KeplerArchiveCrawlerDB
 from secrets import *
 
 
-def generate_tweet(tpf_fn=None, movie_length=96):
+def generate_tweet(tpf_fn=None, movie_length=120):
     """Generate a status message and animated gif.
 
     Parameters
@@ -58,13 +58,8 @@ def generate_tweet(tpf_fn=None, movie_length=96):
                 kepmag = ''
             simbad = ("http://simbad.u-strasbg.fr/simbad/sim-coo?"
                       "output.format=HTML&Coord={0}{1}&Radius=0.5".format(ra[0:8], dec[0:9]))
-            status = "{0} (RA {1}, Dec {2}{3}) on {4}. {5}".format(
-                        tpf.target,
-                        ra[0:8],
-                        dec[0:9],
-                        kepmag,
-                        tpf.timestamp(start)[0:10],
-                        simbad)
+            status = "{0} (RA {1}, Dec {2}{3}). {4}".format(
+                        tpf.target, ra[0:8], dec[0:9], kepmag, simbad)
             log.info(status)
             # Creat the animated gif
             #gif_fn = tpf_fn.split('/')[-1] + '.gif'
