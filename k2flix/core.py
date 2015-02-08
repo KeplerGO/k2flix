@@ -85,7 +85,7 @@ class TargetPixelFile(object):
         flux = self.hdulist[1].data['FLUX'][frame]
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
-            if np.all(np.isnan(flux)) or np.all(flux < 1e-5):
+            if np.all(np.isnan(flux) | (flux < 1e-5)):
                 raise BadKeplerData('frame {0}: empty image'.format(frame))
         return flux
 
@@ -125,7 +125,7 @@ class TargetPixelFile(object):
         fontsize = 3. * flx.shape[0]
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
-            flx[np.isnan(flx) | (flx < 1e-10)] = 1e-10
+            flx[np.isnan(flx) | (flx < vmin)] = vmin
         # Create the frame
         fig = pl.figure(figsize=flx.shape, dpi=dpi)
         ax = fig.add_subplot(111)
@@ -232,7 +232,7 @@ class TargetPixelFile(object):
                                                     vmin=vmin, vmax=vmax,
                                                     cmap=cmap))
             except BadKeplerData as e:
-                log.debug(e)
+                log.error(e)
                 if not ignore_bad_frames:
                     raise e
             pbar.update(idx)

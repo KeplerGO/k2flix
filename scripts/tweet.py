@@ -54,7 +54,7 @@ def generate_tweet(tpf_fn=None, movie_length=96):
                          tpf.hdulist[0].header['KEPMAG']))
             except Exception:
                 kepmag = ''
-            status = "{0} on {1} (RA {2}, Dec {3}{4}).".format(tpf.target,
+            status = "Target \"{0}\" (RA {2}, Dec {3}{4}) on {1}.".format(tpf.target,
                       tpf.timestamp(start)[0:10], ra[0:8], dec[0:9], kepmag)
             log.info(status)
             # Creat the animated gif
