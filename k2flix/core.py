@@ -31,6 +31,9 @@ class BadKeplerData(Exception):
     """Raised if the data appears unsuitable for visualization."""
     pass
 
+class BadKeplerFrame(Exception):
+    """Raised if a frame is empty."""
+    pass
 
 class TargetPixelFile(object):
     """Represent a Target Pixel File (TPC) from the Kepler spacecraft.
@@ -86,7 +89,7 @@ class TargetPixelFile(object):
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
             if np.all(np.isnan(flux) | (flux < 1e-5)):
-                raise BadKeplerData('frame {0}: empty image'.format(frame))
+                raise BadKeplerFrame('frame {0}: empty image'.format(frame))
         return flux
 
     def get_annotated_image(self, frame=0, dpi=None, vmin=0, vmax=5000,
@@ -218,7 +221,8 @@ class TargetPixelFile(object):
             output_fn = self.filename.split('/')[-1] + '.gif'
         log.info('Writing {0}'.format(output_fn))
         # Determine the cut levels for contrast stretching based on a sample
-        sample = self.hdulist[1].data['FLUX'][start:stop:int(self.no_frames/20)]
+        #sample = self.hdulist[1].data['FLUX'][start:stop:int(self.no_frames/20)]
+        sample = np.concatenate((self.get_flux(start), self.get_flux(stop)))
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
             vmin, vmax = np.percentile(sample[sample > 0],
@@ -226,12 +230,12 @@ class TargetPixelFile(object):
         # Create the movie frames
         viz = []
         pbar = ProgressBar(maxval=int((stop-start)/step)).start()
-        for idx, frameno in enumerate(np.arange(start, stop, step, dtype=int)):
+        for idx, frameno in enumerate(np.arange(start, stop+1, step, dtype=int)):
             try:
                 viz.append(self.get_annotated_image(frame=frameno, dpi=dpi,
                                                     vmin=vmin, vmax=vmax,
                                                     cmap=cmap))
-            except BadKeplerData as e:
+            except BadKeplerFrame as e:
                 log.error(e)
                 if not ignore_bad_frames:
                     raise e

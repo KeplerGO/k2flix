@@ -16,6 +16,8 @@ from astropy.coordinates import SkyCoord
 from k2flix import TargetPixelFile
 from k2flix.crawler import KeplerArchiveCrawlerDB
 
+from secrets import *
+
 
 def generate_tweet(tpf_fn=None, movie_length=96):
     """Generate a status message and animated gif.
@@ -54,15 +56,22 @@ def generate_tweet(tpf_fn=None, movie_length=96):
                          tpf.hdulist[0].header['KEPMAG']))
             except Exception:
                 kepmag = ''
-            status = "Target \"{0}\" (RA {2}, Dec {3}{4}) on {1}.".format(tpf.target,
-                      tpf.timestamp(start)[0:10], ra[0:8], dec[0:9], kepmag)
+            simbad = ("http://simbad.u-strasbg.fr/simbad/sim-coo?"
+                      "output.format=HTML&Coord={0}{1}&Radius=0.5".format(ra[0:8], dec[0:9]))
+            status = "{0} (RA {1}, Dec {2}{3}) on {4}. {5}".format(
+                        tpf.target,
+                        ra[0:8],
+                        dec[0:9],
+                        kepmag,
+                        tpf.timestamp(start)[0:10],
+                        simbad)
             log.info(status)
             # Creat the animated gif
             #gif_fn = tpf_fn.split('/')[-1] + '.gif'
             gif_fn = '/tmp/keplerbot.gif'
             tpf.save_movie(gif_fn, start=start, stop=start + movie_length,
-                           step=1, fps=8, min_percent=0., max_percent=92.,
-                           ignore_bad_frames=False)
+                           step=1, fps=8, min_percent=0., max_percent=94.,
+                           ignore_bad_frames=True)
             return status, gif_fn, tpf
         except Exception as e:
             log.warning(e)
@@ -71,7 +80,6 @@ def generate_tweet(tpf_fn=None, movie_length=96):
 
 def post_tweet(status, gif):
     """Post an animated gif and associated status message to Twitter."""
-    from secrets import *
     twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
     # response = twitter.update_status_with_media(status=status, media=open(gif, 'rb'))
     upload_response = twitter.upload_media(media=open(gif, 'rb'))
@@ -86,7 +94,7 @@ if __name__ == '__main__':
         attempt_no += 1
         try:
             status, gif, tpf = generate_tweet()
-            twitter, response = post_tweet(status, gif)
+            #twitter, response = post_tweet(status, gif)
             break
         except Exception as e:
             log.warning(e)
