@@ -58,7 +58,8 @@ def generate_tweet(tpf_fn=None, movie_length=96):
                      ra[0:8], dec[0:9], kepmag, tpf.timestamp(start)[0:10])
             log.info(status)
             # Creat the animated gif
-            gif_fn = tpf_fn.split('/')[-1] + '.gif'
+            #gif_fn = tpf_fn.split('/')[-1] + '.gif'
+            gif_fn = '/tmp/keplerbot.gif'
             tpf.save_movie(gif_fn, start=start, stop=start + movie_length,
                            step=1, fps=8, min_percent=0., max_percent=92.,
                            ignore_bad_frames=False)
