@@ -65,7 +65,7 @@ def generate_tweet(tpf_fn=None, movie_length=120):
             #gif_fn = tpf_fn.split('/')[-1] + '.gif'
             gif_fn = '/tmp/keplerbot.gif'
             tpf.save_movie(gif_fn, start=start, stop=start + movie_length,
-                           step=1, fps=8, min_percent=0., max_percent=94.,
+                           step=1, fps=8, min_percent=0., max_percent=93.,
                            ignore_bad_frames=True)
             return status, gif_fn, tpf
         except Exception as e:
