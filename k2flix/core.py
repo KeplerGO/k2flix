@@ -240,7 +240,7 @@ class TargetPixelFile(object):
                                                     vmin=vmin, vmax=vmax,
                                                     cmap=cmap))
             except BadKeplerFrame as e:
-                log.error(e)
+                log.warning(e)
                 if not ignore_bad_frames:
                     raise e
             pbar.update(idx)
