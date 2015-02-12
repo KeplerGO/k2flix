@@ -1,11 +1,6 @@
-# K2flix
+# K2flix [![build status](http://img.shields.io/travis/barentsen/k2flix/master.svg?style=flat)](http://travis-ci.org/barentsen/k2flix) [![MIT license](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/barentsen/k2flix/blob/master/LICENSE) 
 
 ***Create beautiful quicklook movies from the pixel data observed by NASA's Kepler spacecraft.***
-
-.. image:: http://img.shields.io/travis/barentsen/k2flix/master.svg?style=flat
-        :target: http://travis-ci.org/barentsen/k2flix
-.. image:: http://img.shields.io/badge/license-MIT-blue.svg?style=flat
-        :target: https://github.com/barentsen/k2flix/blob/master/LICENSE
 
 It is always a good practice to inspect scientific measurements *by eye*
 before applying sophisticated data analysis algorithms.
