@@ -2,12 +2,17 @@
 
 ***Create beautiful quicklook movies from the pixel data observed by NASA's Kepler spacecraft.***
 
-It is always useful to inspect scientific measurements *by eye*
+.. image:: http://img.shields.io/travis/barentsen/k2flix/master.svg?style=flat
+        :target: http://travis-ci.org/barentsen/k2flix
+.. image:: http://img.shields.io/badge/license-MIT-blue.svg?style=flat
+        :target: https://github.com/barentsen/k2flix/blob/master/LICENSE
+
+It is always a good practice to inspect scientific measurements *by eye*
 before applying sophisticated data analysis algorithms.
-This simple tool makes it easy to convert the CCD pixel data
+K2flix makes it easy to convert the CCD pixel data
 obtained by [NASA's Kepler space telescope](http://kepler.nasa.gov)
 into beautiful movies for human inspection.
-The tool takes the spacecraft's *Target Pixel Files (TPF)* as input,
+K2flix takes the spacecraft's *Target Pixel Files (TPF)* as input,
 which are publically available from the 
 [Kepler](https://archive.stsci.edu/missions/kepler/target_pixel_files/)
 and the [K2](https://archive.stsci.edu/missions/k2/target_pixel_files/)
