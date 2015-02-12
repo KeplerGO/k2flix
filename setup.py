@@ -17,7 +17,6 @@ setup(name='k2flix',
       install_requires=['numpy',
                         'matplotlib',
                         'astropy',
-                        'imageio',
-                        'progressbar'],
+                        'imageio'],
       entry_points=entry_points,
       )
