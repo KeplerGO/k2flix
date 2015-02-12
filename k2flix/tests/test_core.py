@@ -6,8 +6,9 @@ from k2flix import TargetPixelFile
 class TestCore():
 
     def setup_class(self):
-        data = os.path.join(os.path.dirname(__file__), 'data')
-        self.tpf = TargetPixelFile(os.path.join(data, 'tpf-example.fits.gz'))
+        url = ('http://archive.stsci.edu/missions/k2/target_pixel_files/c1/'
+               '201500000/08000/ktwo201508413-c01_lpd-targ.fits.gz')
+        self.tpf = TargetPixelFile(url)
 
     def test_time(self):
         assert self.tpf.timestamp(0)[0:19] == '2014-05-30 16:16:51'
