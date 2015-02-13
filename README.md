@@ -2,18 +2,16 @@
 
 ***Create beautiful quicklook movies from the pixel data observed by NASA's Kepler spacecraft.***
 
-It is always a good practice to inspect scientific measurements *by eye*
+It is good practice to inspect scientific measurements *by eye*
 before applying sophisticated data analysis algorithms.
 K2flix makes it easy to convert the CCD pixel data
 obtained by [NASA's Kepler space telescope](http://kepler.nasa.gov)
 into beautiful movies for human inspection.
-K2flix takes the spacecraft's *Target Pixel Files (TPF)* as input,
-which are publically available from the 
-[Kepler](https://archive.stsci.edu/missions/kepler/target_pixel_files/)
-and the [K2](https://archive.stsci.edu/missions/k2/target_pixel_files/)
-data archives.
-The output are contrast-stretched MPEG-4 movies or animated gifs.
-
+K2flix takes one of Kepler's *Target Pixel Files (TPF)* as input
+and turns it into a contrast-stretched animated gif or MPEG-4 movie.
+These *TPF files* are publically available from the 
+[Kepler archive](https://archive.stsci.edu/missions/kepler/target_pixel_files/) (pre-2014)
+and the [K2 archive](https://archive.stsci.edu/missions/k2/target_pixel_files/) (post-2014).
 
 ### Installation
 If you have a working installation of Python on your system, you can install k2flix using pip:
