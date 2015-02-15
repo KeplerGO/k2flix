@@ -7,16 +7,25 @@ before applying sophisticated data analysis algorithms.
 K2flix makes it easy to convert the CCD pixel data
 obtained by [NASA's Kepler space telescope](http://kepler.nasa.gov)
 into beautiful movies for human inspection.
-K2flix takes one of Kepler's *Target Pixel Files (TPF)* as input
-and turns it into a contrast-stretched animated gif or MPEG-4 movie.
+K2flix takes Kepler's *Target Pixel Files (TPF)* as input
+and turns them into contrast-stretched animated gifs or MPEG-4 movies.
 These *TPF files* are publically available from the 
-[Kepler archive](https://archive.stsci.edu/missions/kepler/target_pixel_files/) (pre-2014)
-and the [K2 archive](https://archive.stsci.edu/missions/k2/target_pixel_files/) (post-2014).
+[Kepler archive](https://archive.stsci.edu/missions/kepler/target_pixel_files/)
+and the [K2 archive](https://archive.stsci.edu/missions/k2/target_pixel_files/).
+
+### Example
+Asteroids commonly pass in front of Kepler/K2 targets. 
+How many can you spot in this example 2-day animation?
+```
+$ k2flix --start 545 --stop 680 --step 1 --fps 12 http://archive.stsci.edu\
+/missions/k2/target_pixel_files/c1/201500000/72000/ktwo201572338-c01_lpd-targ.fits.gz
+```
+<img src="https://raw.githubusercontent.com/barentsen/k2flix/master/examples/epic-201572338.gif" />
 
 ### Installation
 If you have a working installation of Python on your system, you can install k2flix using pip:
 ```
-pip install git+https://github.com/barentsen/k2flix
+$ pip install git+https://github.com/barentsen/k2flix
 ```
 Alternatively, you can clone the repository and install from source:
 ```
