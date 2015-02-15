@@ -54,4 +54,6 @@ docs/_build/
 target/
 
 # Custom additions
+sandbox
+c1-urls.txt
 secrets.py
