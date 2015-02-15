@@ -16,15 +16,15 @@ and the [K2 archive](https://archive.stsci.edu/missions/k2/target_pixel_files/).
 ### Example
 Asteroids commonly pass in front of Kepler/K2 targets.  How many can you spot in this example 2-day animation?
 ```
-$ k2flix --start 545 --stop 680 --step 1 --fps 12 --dpi 25 http://archive.stsci.edu/missions/k2\
+$ k2flix --start 545 --stop 680 --step 1 --fps 12 http://archive.stsci.edu/missions/k2\
 /target_pixel_files/c1/201500000/72000/ktwo201572338-c01_lpd-targ.fits.gz
 ```
-<img src="https://raw.githubusercontent.com/barentsen/k2flix/master/examples/epic-201572338.gif" width="220" />
+<img src="https://raw.githubusercontent.com/barentsen/k2flix/master/examples/epic-201572338.gif" />
 
 ### Installation
 If you have a working installation of Python on your system, you can install k2flix using pip:
 ```
-pip install git+https://github.com/barentsen/k2flix
+$ pip install git+https://github.com/barentsen/k2flix
 ```
 Alternatively, you can clone the repository and install from source:
 ```
