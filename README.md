@@ -14,10 +14,11 @@ These *TPF files* are publically available from the
 and the [K2 archive](https://archive.stsci.edu/missions/k2/target_pixel_files/).
 
 ### Example
-Asteroids commonly pass in front of Kepler/K2 targets.  How many can you spot in this example 2-day animation?
+Asteroids commonly pass in front of Kepler/K2 targets. 
+How many can you spot in this example 2-day animation?
 ```
-$ k2flix --start 545 --stop 680 --step 1 --fps 12 http://archive.stsci.edu/missions/k2\
-/target_pixel_files/c1/201500000/72000/ktwo201572338-c01_lpd-targ.fits.gz
+$ k2flix --start 545 --stop 680 --step 1 --fps 12 http://archive.stsci.edu\
+/missions/k2/target_pixel_files/c1/201500000/72000/ktwo201572338-c01_lpd-targ.fits.gz
 ```
 <img src="https://raw.githubusercontent.com/barentsen/k2flix/master/examples/epic-201572338.gif" />
 
