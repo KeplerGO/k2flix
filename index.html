@@ -1,61 +1,74 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
+
   <head>
-    <meta charset="utf-8">
+    <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>K2flix by barentsen</title>
+    <meta name="description" content="K2flix : Create beautiful movies from Kepler spacecraft data">
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="javascripts/scale.fix.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>K2flix</title>
   </head>
+
   <body>
-    <div class="wrapper">
-      <header>
-        <h1 class="header">K2flix</h1>
-        <p class="header">Create beautiful quicklook movies from the pixel data observed by NASA&#39;s Kepler spacecraft</p>
 
-        <ul>
-          <li class="download"><a class="buttons" href="https://github.com/barentsen/k2flix/zipball/master">Download ZIP</a></li>
-          <li class="download"><a class="buttons" href="https://github.com/barentsen/k2flix/tarball/master">Download TAR</a></li>
-          <li><a class="buttons github" href="https://github.com/barentsen/k2flix">View On GitHub</a></li>
-        </ul>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/barentsen/k2flix">View on GitHub</a>
 
-        <p class="header">This project is maintained by <a class="header name" href="https://github.com/barentsen">barentsen</a></p>
+          <h1 id="project_title">K2flix</h1>
+          <h2 id="project_tagline">Create beautiful movies from Kepler spacecraft data</h2>
 
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/barentsen/k2flix/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/barentsen/k2flix/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
 
-      </header>
-      <section>
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
         <h1>
-<a id="k2flix" class="anchor" href="#k2flix" aria-hidden="true"><span class="octicon octicon-link"></span></a>K2flix</h1>
+<a id="k2flix----" class="anchor" href="#k2flix----" aria-hidden="true"><span class="octicon octicon-link"></span></a>K2flix <a href="http://travis-ci.org/barentsen/k2flix"><img src="http://img.shields.io/travis/barentsen/k2flix/master.svg?style=flat" alt="Travis status"></a> <a href="https://pypi.python.org/pypi/k2flix/"><img src="http://img.shields.io/pypi/v/k2flix.svg?style=flat" alt="PyPI"></a> <a href="https://pypi.python.org/pypi/k2flix/"><img src="http://img.shields.io/pypi/dm/k2flix.svg?style=flat" alt="PyPI"></a> <a href="https://github.com/barentsen/k2flix/blob/master/LICENSE"><img src="http://img.shields.io/badge/license-MIT-blue.svg?style=flat" alt="MIT license"></a>
+</h1>
 
-<p><strong>Create beautiful quicklook movies from the pixel data observed by NASA's Kepler spacecraft.</strong></p>
+<p><strong><em>Create beautiful quicklook movies from the pixel data observed by NASA's Kepler spacecraft.</em></strong></p>
 
-<p>It is always useful to inspect scientific measurements <em>by eye</em>
+<p>It is good practice to inspect scientific measurements <em>by eye</em>
 before applying sophisticated data analysis algorithms.
-This simple tool makes it easy to convert the CCD pixel data
+K2flix makes it easy to convert the CCD pixel data
 obtained by <a href="http://kepler.nasa.gov">NASA's Kepler space telescope</a>
 into beautiful movies for human inspection.
-The tool takes the spacecraft's <em>Target Pixel Files</em> (TPF) as input,
-which are publically available from the 
-<a href="https://archive.stsci.edu/missions/kepler/target_pixel_files/">Kepler</a>
-and the <a href="https://archive.stsci.edu/missions/k2/target_pixel_files/">K2</a>
-data archives.
-The output are beautifully contrast-stretched animated gifs or MPEG-4 movies.</p>
+K2flix takes Kepler's <em>Target Pixel Files (TPF)</em> as input
+and turns them into contrast-stretched animated gifs or MPEG-4 movies.
+These <em>TPF files</em> are publically available from the 
+<a href="https://archive.stsci.edu/missions/kepler/target_pixel_files/">Kepler archive</a>
+and the <a href="https://archive.stsci.edu/missions/k2/target_pixel_files/">K2 archive</a>.</p>
+
+<h3>
+<a id="example" class="anchor" href="#example" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example</h3>
+
+<p>Asteroids commonly pass in front of Kepler/K2 targets. 
+How many can you spot in this example 2-day animation?</p>
+
+<pre><code>$ k2flix --start 545 --stop 680 --step 1 --fps 12 http://archive.stsci.edu\
+/missions/k2/target_pixel_files/c1/201500000/72000/ktwo201572338-c01_lpd-targ.fits.gz
+</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/barentsen/k2flix/master/examples/epic-201572338.gif"></p>
 
 <h3>
 <a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h3>
 
 <p>If you have a working installation of Python on your system, you can install k2flix using pip:</p>
 
-<pre><code>pip install git+https://github.com/barentsen/k2flix
+<pre><code>$ pip install k2flix
 </code></pre>
 
-<p>Alternatively, you can clone the repository and install from source:</p>
+<p>Alternatively, you can get the latest version by installing from source:</p>
 
 <pre><code>$ git clone https://github.com/barentsen/k2flix.git
 $ cd k2flix
@@ -122,16 +135,19 @@ optional arguments:
 <h3>
 <a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h3>
 
-<p>Copyright 2015 Geert Barentsen.</p>
-
-<p>K2flix is free software made available under the MIT License. For details see the LICENSE file.</p>
+<p>Copyright 2015 Geert Barentsen. K2flix is free software made available under the MIT License. For details see the LICENSE file.</p>
       </section>
-      <footer>
-        <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">K2flix maintained by <a href="https://github.com/barentsen">barentsen</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-		          <script type="text/javascript">
+
+              <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
           </script>
@@ -141,6 +157,7 @@ optional arguments:
             pageTracker._trackPageview();
             } catch(err) {}
           </script>
+
 
   </body>
 </html>
