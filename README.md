@@ -1,4 +1,4 @@
-# K2flix [![Travis status](http://img.shields.io/travis/barentsen/k2flix/master.svg?style=flat)](http://travis-ci.org/barentsen/k2flix) [![MIT license](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/barentsen/k2flix/blob/master/LICENSE) 
+# K2flix [![Travis status](http://img.shields.io/travis/barentsen/k2flix/master.svg?style=flat)](http://travis-ci.org/barentsen/k2flix) [![PyPI](http://img.shields.io/pypi/v/k2flix.svg?style=flat)](https://pypi.python.org/pypi/k2flix/) [![PyPI](http://img.shields.io/pypi/dm/k2flix.svg?style=flat)](https://pypi.python.org/pypi/k2flix/) [![MIT license](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/barentsen/k2flix/blob/master/LICENSE) 
 ***Create beautiful quicklook movies from the pixel data observed by NASA's Kepler spacecraft.***
 
 It is good practice to inspect scientific measurements *by eye*
@@ -24,9 +24,9 @@ $ k2flix --start 545 --stop 680 --step 1 --fps 12 http://archive.stsci.edu\
 ### Installation
 If you have a working installation of Python on your system, you can install k2flix using pip:
 ```
-$ pip install git+https://github.com/barentsen/k2flix
+$ pip install k2flix
 ```
-Alternatively, you can clone the repository and install from source:
+Alternatively, you can get the latest version by installing from source:
 ```
 $ git clone https://github.com/barentsen/k2flix.git
 $ cd k2flix
@@ -86,6 +86,4 @@ optional arguments:
 To report bugs and request features, please use the [issue tracker](https://github.com/barentsen/k2flix/issues). Code contributions are very welcome.
 
 ### License
-Copyright 2015 Geert Barentsen.
-
-K2flix is free software made available under the MIT License. For details see the LICENSE file.
+Copyright 2015 Geert Barentsen. K2flix is free software made available under the MIT License. For details see the LICENSE file.
