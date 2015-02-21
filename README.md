@@ -1,20 +1,19 @@
-# K2flix 
+# K2flix: Kepler pixel data visualizer 
 ***Create beautiful quicklook movies from the pixel data observed by NASA's Kepler spacecraft.***
-
-
 
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.15576.svg)](http://dx.doi.org/10.5281/zenodo.15576) [![PyPI](http://img.shields.io/pypi/v/k2flix.svg)](https://pypi.python.org/pypi/k2flix/) [![PyPI](http://img.shields.io/pypi/dm/k2flix.svg)](https://pypi.python.org/pypi/k2flix/) [![Travis status](http://img.shields.io/travis/barentsen/k2flix/master.svg)](http://travis-ci.org/barentsen/k2flix) [![MIT license](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/barentsen/k2flix/blob/master/LICENSE) 
 
-It is good practice to inspect scientific measurements *by eye*
-before applying sophisticated data analysis algorithms.
-K2flix makes it easy to convert the CCD pixel data
-obtained by [NASA's Kepler space telescope](http://kepler.nasa.gov)
-into beautiful movies for human inspection.
-K2flix takes Kepler's *Target Pixel Files (TPF)* as input
+K2flix makes it easy to inspect the CCD pixel data
+obtained by [NASA's Kepler space telescope](http://kepler.nasa.gov).
+The need for this tool arises from the fact that the two-wheeled extended Kepler mission, K2,
+is affected by new sources of noise -- including pointing jitter and foreground asteroids --
+which are more easy to spot by eye than by algorithm.
+The code takes Kepler's *Target Pixel Files (TPF)* as input
 and turns them into contrast-stretched animated gifs or MPEG-4 movies.
 These *TPF files* are publically available from the 
 [Kepler archive](https://archive.stsci.edu/missions/kepler/target_pixel_files/)
-and the [K2 archive](https://archive.stsci.edu/missions/k2/target_pixel_files/).
+and the [K2 archive](https://archive.stsci.edu/missions/k2/target_pixel_files/). 
+K2flix can be used both as a command-line tool or using its Python API.
 
 ### Example
 Asteroids commonly pass in front of Kepler/K2 targets. 
@@ -84,6 +83,21 @@ optional arguments:
                         percentile value used to determine the maximum cut
                         level (default: 95.0)
   --cmap colormap_name  matplotlib color map name (default: gray)
+```
+
+### Citing
+If you use this tool in an academic publication, please include a citation.
+Citation information in a variety of formats can be found on [zenodo](https://zenodo.org/record/15576).
+The BibTeX entry is:
+```
+@misc{k2flix,
+  author       = {Barentsen, Geert}
+  title        = {K2flix: Kepler pixel data visualizer},
+  month        = feb,
+  year         = 2015,
+  doi          = {10.5281/zenodo.15576},
+  url          = {http://dx.doi.org/10.5281/zenodo.15576}
+}
 ```
 
 ### Contributing
