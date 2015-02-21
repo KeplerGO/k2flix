@@ -4,7 +4,7 @@
   <head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="K2flix : Create beautiful movies from Kepler spacecraft data">
+    <meta name="description" content="K2flix : Kepler pixel data visualizer">
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
@@ -19,7 +19,7 @@
           <a id="forkme_banner" href="https://github.com/barentsen/k2flix">View on GitHub</a>
 
           <h1 id="project_title">K2flix</h1>
-          <h2 id="project_tagline">Create beautiful movies from Kepler spacecraft data</h2>
+          <h2 id="project_tagline">Kepler pixel data visualizer</h2>
 
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/barentsen/k2flix/zipball/master">Download this project as a .zip file</a>
@@ -31,21 +31,21 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <h1>
-<a id="k2flix" class="anchor" href="#k2flix" aria-hidden="true"><span class="octicon octicon-link"></span></a>K2flix</h1>
+        <p><strong><em>Create beautiful movies from the pixel data observed by NASA's Kepler spacecraft.</em></strong></p>
 
-<p><strong><em>Create beautiful quicklook movies from the pixel data observed by NASA's Kepler spacecraft.</em></strong></p>
+<p><a href="http://dx.doi.org/10.5281/zenodo.15576"><img src="https://zenodo.org/badge/doi/10.5281/zenodo.15576.svg" alt="DOI"></a> <a href="https://pypi.python.org/pypi/k2flix/"><img src="http://img.shields.io/pypi/v/k2flix.svg" alt="PyPI"></a> <a href="https://pypi.python.org/pypi/k2flix/"><img src="http://img.shields.io/pypi/dm/k2flix.svg" alt="PyPI"></a> <a href="http://travis-ci.org/barentsen/k2flix"><img src="http://img.shields.io/travis/barentsen/k2flix/master.svg" alt="Travis status"></a> <a href="https://github.com/barentsen/k2flix/blob/master/LICENSE"><img src="http://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a> </p>
 
-<p>It is good practice to inspect scientific measurements <em>by eye</em>
-before applying sophisticated data analysis algorithms.
-K2flix makes it easy to convert the CCD pixel data
-obtained by <a href="http://kepler.nasa.gov">NASA's Kepler space telescope</a>
-into beautiful movies for human inspection.
-K2flix takes Kepler's <em>Target Pixel Files (TPF)</em> as input
+<p>K2flix makes it easy to inspect the CCD pixel data
+obtained by <a href="http://kepler.nasa.gov">NASA's Kepler space telescope</a>.
+The need for this tool arises from the fact that the two-wheeled extended Kepler mission, K2,
+is affected by new sources of noise -- including pointing jitter and foreground asteroids --
+which are more easy to spot by eye than by algorithm.
+The code takes Kepler's <em>Target Pixel Files (TPF)</em> as input
 and turns them into contrast-stretched animated gifs or MPEG-4 movies.
 These <em>TPF files</em> are publically available from the 
 <a href="https://archive.stsci.edu/missions/kepler/target_pixel_files/">Kepler archive</a>
-and the <a href="https://archive.stsci.edu/missions/k2/target_pixel_files/">K2 archive</a>.</p>
+and the <a href="https://archive.stsci.edu/missions/k2/target_pixel_files/">K2 archive</a>. 
+K2flix can be used both as a command-line tool or using its Python API.</p>
 
 <h3>
 <a id="example" class="anchor" href="#example" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example</h3>
@@ -124,6 +124,23 @@ optional arguments:
                         percentile value used to determine the maximum cut
                         level (default: 95.0)
   --cmap colormap_name  matplotlib color map name (default: gray)
+</code></pre>
+
+<h3>
+<a id="citing" class="anchor" href="#citing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Citing</h3>
+
+<p>If you use this tool in an academic publication, please include a citation.
+Citation information in a variety of formats can be found on <a href="https://zenodo.org/record/15576">zenodo</a>.
+The BibTeX entry is:</p>
+
+<pre><code>@misc{k2flix,
+  author       = {Barentsen, Geert}
+  title        = {K2flix: Kepler pixel data visualizer},
+  month        = feb,
+  year         = 2015,
+  doi          = {10.5281/zenodo.15576},
+  url          = {http://dx.doi.org/10.5281/zenodo.15576}
+}
 </code></pre>
 
 <h3>
