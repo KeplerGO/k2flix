@@ -24,6 +24,8 @@ $ k2flix --start 545 --stop 680 --step 1 --fps 12 http://archive.stsci.edu\
 ```
 <img src="https://raw.githubusercontent.com/barentsen/k2flix/master/examples/epic-201572338.gif" />
 
+To see many more examples, follow [@KeplerBot](https://twitter.com/KeplerBot) on Twitter!
+
 ### Installation
 If you have a working installation of Python on your system, you can install k2flix using pip:
 ```
