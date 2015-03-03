@@ -89,7 +89,7 @@ optional arguments:
 
 ### Citing
 If you use this tool in an academic publication, please include a citation.
-The code has been registered in the [Astrophysics Source Code Library](http://ascl.net/code/v/1069) and the preferred BibTeX entry is:
+The code has been registered in the Astrophysics Source Code Library [[ascl:1503.001]](http://ascl.net/code/v/1069) and the preferred BibTeX entry is:
 ```
 @MISC{2015ascl.soft03001B,
   author        = {{Barentsen}, G.},
