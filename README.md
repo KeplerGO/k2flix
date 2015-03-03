@@ -89,16 +89,20 @@ optional arguments:
 
 ### Citing
 If you use this tool in an academic publication, please include a citation.
-Citation information in a variety of formats can be found on [zenodo](https://zenodo.org/record/15576).
-The BibTeX entry is:
+The code has been registered in the [Astrophysics Source Code Library](http://ascl.net/code/v/1069) and the preferred BibTeX entry is:
 ```
-@misc{k2flix,
-  author       = {Barentsen, Geert}
-  title        = {K2flix: Kepler pixel data visualizer},
-  month        = feb,
-  year         = 2015,
-  doi          = {10.5281/zenodo.15576},
-  url          = {http://dx.doi.org/10.5281/zenodo.15576}
+@MISC{2015ascl.soft03001B,
+  author        = {{Barentsen}, G.},
+  title         = "{K2flix: Kepler pixel data visualizer}",
+  howpublished  = {Astrophysics Source Code Library},
+  year          = 2015,
+  month         = mar,
+  archivePrefix = "ascl",
+  eprint        = {1503.001},
+  adsurl        = {http://adsabs.harvard.edu/abs/2015ascl.soft03001B},
+  adsnote       = {Provided by the SAO/NASA Astrophysics Data System},
+  doi           = {10.5281/zenodo.15576},
+  url           = {http://dx.doi.org/10.5281/zenodo.15576}
 }
 ```
 
