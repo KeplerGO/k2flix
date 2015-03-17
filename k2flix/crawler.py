@@ -33,7 +33,7 @@ class KeplerArchiveCrawler(object):
     max_requests : int
         Maximum number of URLs that will be opened.
     """
-    def __init__(self, baseurl, max_requests=1e5):
+    def __init__(self, baseurl, max_requests=2e5):
         self.baseurl = baseurl
         self.urlqueue = [baseurl]
         self.tpf_files = []
@@ -83,7 +83,7 @@ class KeplerArchiveCrawler(object):
                 # crawl new relative urls
                 log.debug('Will crawl {0}'.format(new_url))
                 self.add_url_to_check(new_url)
-            elif new_url.endswith('targ.fits.gz'):
+            elif new_url.endswith('targ.fits.gz') or new_url.endswith('targ.fits'):
                 # found a target file!
                 self.save_url(new_url)
 
@@ -125,5 +125,5 @@ if __name__ == '__main__':
                              'target_pixel_files/' + campaign)
     c.crawl(output_fn)
     # Get a random TPF url
-    db = KeplerArchiveCrawlerDB(output_fn)
-    url = db.random_url()
+    #db = KeplerArchiveCrawlerDB(output_fn)
+    #url = db.random_url()
