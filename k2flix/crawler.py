@@ -10,9 +10,13 @@ from __future__ import (absolute_import, division, print_function,
 import time
 import random
 import posixpath
-import urlparse
-from urllib import urlopen
 from bs4 import BeautifulSoup
+try:
+    import urlparse  # Python 2
+    from urllib import urlopen
+except ImportError:
+    import urllib.parse as urlparse  # Python 3
+    from urllib.request import urlopen
 
 from astropy import log
 
@@ -39,7 +43,7 @@ class KeplerArchiveCrawler(object):
     def __del__(self):
         self.output.close()
 
-    def crawl(self, output_fn, sleep=1):
+    def crawl(self, output_fn, sleep=0.5):
         """Run the crawler.
 
         Parameters
@@ -115,8 +119,8 @@ class KeplerArchiveCrawlerDB():
 # Example use
 if __name__ == '__main__':
     # Create an index of TPF files
-    campaign = 'c1'
-    output_fn = '{0}-archive.txt'.format(campaign)
+    campaign = 'c02'
+    output_fn = '{0}-fits-urls.txt'.format(campaign)
     c = KeplerArchiveCrawler('http://archive.stsci.edu/missions/k2/'
                              'target_pixel_files/' + campaign)
     c.crawl(output_fn)
