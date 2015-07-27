@@ -130,7 +130,7 @@ class TargetPixelFile(object):
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
             flx[np.isnan(flx) | (flx < vmin)] = vmin
         # Create the frame
-        fig = pl.figure(figsize=flx.shape, dpi=dpi)
+        fig = pl.figure(figsize=flx.shape[::-1], dpi=dpi)
         ax = fig.add_subplot(111)
         ax.matshow(flx, aspect='auto',
                    norm=LogNorm(vmin=vmin, vmax=vmax),
