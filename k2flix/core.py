@@ -3,6 +3,7 @@
 """"Create movies or animated gifs from Kepler Target Pixel Files.
 
 Author: Geert Barentsen
+Contributor: Aleksa Sarai
 """
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
