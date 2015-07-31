@@ -119,11 +119,12 @@ class KeplerArchiveCrawlerDB():
 # Example use
 if __name__ == '__main__':
     # Create an index of TPF files
-    campaign = 'c02'
+    campaign = 'c3'
     output_fn = '{0}-fits-urls.txt'.format(campaign)
     c = KeplerArchiveCrawler('http://archive.stsci.edu/missions/k2/'
                              'target_pixel_files/' + campaign)
     c.crawl(output_fn)
-    # Get a random TPF url
+    
+    # Example: get a random TPF url
     #db = KeplerArchiveCrawlerDB(output_fn)
     #url = db.random_url()
