@@ -220,9 +220,22 @@ class TargetPixelFile(object):
         if output_fn is None:
             output_fn = self.filename.split('/')[-1] + '.gif'
         log.info('Writing {0}'.format(output_fn))
-        # Determine the cut levels for contrast stretching based on a sample
-        #sample = self.hdulist[1].data['FLUX'][start:stop:int(self.no_frames/20)]
-        sample = np.concatenate((self.flux(start), self.flux(stop)))
+        # Determine cut levels for contrast stretching from a sample
+        # First we try to use the first and last frame
+        try:
+            sample = np.concatenate((self.flux(start), self.flux(stop)))
+        except BadKeplerFrame:
+            # If the first or last frame are no good, then find first good frame
+            success = False
+            for idx in range(stop):
+                try:
+                    sample = self.flux(np.random.randint(stop))
+                    break
+                except BadKeplerFrame:
+                    pass
+            if not success:
+                raise BadKeplerFrame("Could not find a good frame.")
+
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
             vmin, vmax = np.percentile(sample[sample > 0],
