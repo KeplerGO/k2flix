@@ -1,5 +1,4 @@
 numpy
 matplotlib
-progressbar
-imageio
 astropy
+imageio

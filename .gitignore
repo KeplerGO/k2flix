@@ -52,3 +52,9 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Custom additions
+sandbox
+c1-urls.txt
+secrets.py
+TODO

@@ -12,7 +12,6 @@ __all__ = ["TargetPixelFile"]
 import warnings
 import imageio
 import argparse
-from progressbar import ProgressBar
 import numpy as np
 
 import matplotlib
@@ -24,12 +23,9 @@ import matplotlib.patheffects as path_effects
 
 from astropy.io import fits
 from astropy.time import Time
+from astropy.utils.console import ProgressBar
 from astropy import log
 
-
-class BadKeplerData(Exception):
-    """Raised if the data appears unsuitable for visualization."""
-    pass
 
 class BadKeplerFrame(Exception):
     """Raised if a frame is empty."""
@@ -81,23 +77,23 @@ class TargetPixelFile(object):
         # see Kepler Archive Manual Sect. 2.3.2
         time_value = self.hdulist[1].data['TIME'][frame]
         if np.isnan(time_value):
-            raise BadKeplerData('frame {0}: empty time value'.format(frame))
+            raise BadKeplerFrame('frame {0}: empty time value'.format(frame))
         bjd = (time_value
                + self.hdulist[1].header['BJDREFI']
                + self.hdulist[1].header['BJDREFF'])
         t = Time(bjd, format='jd')
         return t.iso
 
-    def get_flux(self, frame=0):
-        flux = self.hdulist[1].data['FLUX'][frame]
+    def flux(self, frame=0):
+        flux = self.hdulist[1].data['FLUX'][frame].copy()
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
             if np.all(np.isnan(flux) | (flux < 1e-5)):
-                raise BadKeplerFrame('frame {0}: empty image'.format(frame))
+                raise BadKeplerFrame('frame {0}: bad frame'.format(frame))
         return flux
 
-    def get_annotated_image(self, frame=0, dpi=None, vmin=0, vmax=5000,
-                            cmap='gray',):
+    def annotated_image(self, frame=0, dpi=None, vmin=1, vmax=5000,
+                        cmap='gray'):
         """Returns the visualization (image array) for a single frame.
 
         Parameters
@@ -125,7 +121,7 @@ class TargetPixelFile(object):
             An array of unisgned integers of shape (x, y, 3),
             representing an RBG colour image x px wide and y px high.
         """
-        flx = self.get_flux(frame)
+        flx = self.flux(frame)
         if dpi is None:
             # Twitter timeline requires dimensions between 440x220 and 1024x512
             dpi = 440 / float(flx.shape[0])
@@ -215,7 +211,7 @@ class TargetPixelFile(object):
 
         ignore_bad_frames : boolean
              If true, any frames which cannot be rendered will be ignored
-             without raising a `BadKeplerData` exception.
+             without raising a `BadKeplerFrame` exception.
         """
         if stop < 0:
             stop = self.no_frames + stop
@@ -224,27 +220,37 @@ class TargetPixelFile(object):
         if output_fn is None:
             output_fn = self.filename.split('/')[-1] + '.gif'
         log.info('Writing {0}'.format(output_fn))
-        # Determine the cut levels for contrast stretching based on a sample
-        #sample = self.hdulist[1].data['FLUX'][start:stop:int(self.no_frames/20)]
-        sample = np.concatenate((self.get_flux(start), self.get_flux(stop)))
+        # Determine cut levels for contrast stretching from a sample
+        # First we try to use the first and last frame
+        try:
+            sample = np.concatenate((self.flux(start), self.flux(stop)))
+        except BadKeplerFrame:
+            # If the first or last frame are no good, then find first good frame
+            success = False
+            for idx in range(stop):
+                try:
+                    sample = self.flux(np.random.randint(stop))
+                    break
+                except BadKeplerFrame:
+                    pass
+            if not success:
+                raise BadKeplerFrame("Could not find a good frame.")
+
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
             vmin, vmax = np.percentile(sample[sample > 0],
                                        [min_percent, max_percent])
         # Create the movie frames
         viz = []
-        pbar = ProgressBar(maxval=int((stop-start)/step)).start()
-        for idx, frameno in enumerate(np.arange(start, stop+1, step, dtype=int)):
+        for frameno in ProgressBar(np.arange(start, stop+1, step, dtype=int)):
             try:
-                viz.append(self.get_annotated_image(frame=frameno, dpi=dpi,
-                                                    vmin=vmin, vmax=vmax,
-                                                    cmap=cmap))
+                viz.append(self.annotated_image(frame=frameno, dpi=dpi,
+                                                vmin=vmin, vmax=vmax,
+                                                cmap=cmap))
             except BadKeplerFrame as e:
                 log.warning(e)
                 if not ignore_bad_frames:
                     raise e
-            pbar.update(idx)
-        pbar.finish()
         # Save the output as a movie
         if output_fn.endswith('.gif'):
             kwargs = {'duration': 1. / fps}

@@ -10,9 +10,13 @@ from __future__ import (absolute_import, division, print_function,
 import time
 import random
 import posixpath
-import urlparse
-from urllib import urlopen
 from bs4 import BeautifulSoup
+try:
+    import urlparse  # Python 2
+    from urllib import urlopen
+except ImportError:
+    import urllib.parse as urlparse  # Python 3
+    from urllib.request import urlopen
 
 from astropy import log
 
@@ -29,7 +33,7 @@ class KeplerArchiveCrawler(object):
     max_requests : int
         Maximum number of URLs that will be opened.
     """
-    def __init__(self, baseurl, max_requests=1e5):
+    def __init__(self, baseurl, max_requests=2e5):
         self.baseurl = baseurl
         self.urlqueue = [baseurl]
         self.tpf_files = []
@@ -39,7 +43,7 @@ class KeplerArchiveCrawler(object):
     def __del__(self):
         self.output.close()
 
-    def crawl(self, output_fn, sleep=1):
+    def crawl(self, output_fn, sleep=0.5):
         """Run the crawler.
 
         Parameters
@@ -79,7 +83,7 @@ class KeplerArchiveCrawler(object):
                 # crawl new relative urls
                 log.debug('Will crawl {0}'.format(new_url))
                 self.add_url_to_check(new_url)
-            elif new_url.endswith('targ.fits.gz'):
+            elif new_url.endswith('targ.fits.gz') or new_url.endswith('targ.fits'):
                 # found a target file!
                 self.save_url(new_url)
 
@@ -115,11 +119,12 @@ class KeplerArchiveCrawlerDB():
 # Example use
 if __name__ == '__main__':
     # Create an index of TPF files
-    campaign = 'c1'
-    output_fn = '{0}-archive.txt'.format(campaign)
+    campaign = 'c3'
+    output_fn = '{0}-fits-urls.txt'.format(campaign)
     c = KeplerArchiveCrawler('http://archive.stsci.edu/missions/k2/'
                              'target_pixel_files/' + campaign)
     c.crawl(output_fn)
-    # Get a random TPF url
-    db = KeplerArchiveCrawlerDB(output_fn)
-    url = db.random_url()
+    
+    # Example: get a random TPF url
+    #db = KeplerArchiveCrawlerDB(output_fn)
+    #url = db.random_url()
