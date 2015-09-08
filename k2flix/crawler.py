@@ -119,7 +119,7 @@ class KeplerArchiveCrawlerDB():
 # Example use
 if __name__ == '__main__':
     # Create an index of TPF files
-    campaign = 'c3'
+    campaign = 'c4'
     output_fn = '{0}-fits-urls.txt'.format(campaign)
     c = KeplerArchiveCrawler('http://archive.stsci.edu/missions/k2/'
                              'target_pixel_files/' + campaign)
