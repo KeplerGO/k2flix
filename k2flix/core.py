@@ -277,7 +277,7 @@ def k2flix_main(args=None):
                         help='spacing between frames '
                              '(default: output 100 frames)')
     parser.add_argument('--fps', type=float, default=15.,
-                        help='frames per second (default: 5)')
+                        help='frames per second (default: 15)')
     parser.add_argument('--dpi', type=float, default=None,
                         help='resolution of the output in dots per K2 pixel')
     parser.add_argument('--min_percent', type=float, default=1.,
