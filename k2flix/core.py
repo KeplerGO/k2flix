@@ -216,7 +216,9 @@ class TargetPixelFile(object):
         if stop < 0:
             stop = self.no_frames + stop
         if step is None:
-            step = (stop - start) / 100
+            step = int((stop - start) / 100)
+            if step < 1:
+                step = 1
         if output_fn is None:
             output_fn = self.filename.split('/')[-1] + '.gif'
         log.info('Writing {0}'.format(output_fn))
