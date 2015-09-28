@@ -18,13 +18,13 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as pl
 from matplotlib.image import imsave
-from matplotlib.colors import LogNorm
 import matplotlib.patheffects as path_effects
 
 from astropy.io import fits
 from astropy.time import Time
 from astropy.utils.console import ProgressBar
 from astropy import log
+from astropy import visualization
 
 
 class BadKeplerFrame(Exception):
@@ -84,16 +84,21 @@ class TargetPixelFile(object):
         t = Time(bjd, format='jd')
         return t.iso
 
-    def flux(self, frame=0):
-        flux = self.hdulist[1].data['FLUX'][frame].copy()
+    def flux(self, frame=0, raw=False):
+        """Returns the raw or calibrated flux data for a given frame."""
+        if raw:
+            flux_column = "RAW_CNTS"
+        else:
+            flux_column = "FLUX"
+        flux = self.hdulist[1].data[flux_column][frame].copy()
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
-            if np.all(np.isnan(flux) | (flux < 1e-5)):
+            if np.all(np.isnan(flux)):
                 raise BadKeplerFrame('frame {0}: bad frame'.format(frame))
         return flux
 
     def annotated_image(self, frame=0, dpi=None, vmin=1, vmax=5000,
-                        cmap='gray'):
+                        cmap='gray', raw=False):
         """Returns the visualization (image array) for a single frame.
 
         Parameters
@@ -115,13 +120,17 @@ class TargetPixelFile(object):
             The matplotlib color map name.  The default is 'gray',
             can also be e.g. 'gist_heat'.
 
+        raw : boolean, optional
+            If `True`, show the raw pixel counts rather than
+            the calibrated flux. Default: `False`.
+
         Returns
         -------
         image : array
             An array of unisgned integers of shape (x, y, 3),
             representing an RBG colour image x px wide and y px high.
         """
-        flx = self.flux(frame)
+        flx = self.flux(frame, raw=raw)
         if dpi is None:
             # Twitter timeline requires dimensions between 440x220 and 1024x512
             dpi = 440 / float(flx.shape[0])
@@ -132,8 +141,8 @@ class TargetPixelFile(object):
         # Create the frame
         fig = pl.figure(figsize=flx.shape, dpi=dpi)
         ax = fig.add_subplot(111)
-        ax.matshow(flx, aspect='auto',
-                   norm=LogNorm(vmin=vmin, vmax=vmax),
+        transform = visualization.LogStretch() + visualization.ManualInterval(vmin=vmin, vmax=vmax)
+        ax.matshow(transform(flx), aspect='auto',
                    cmap=cmap, origin='lower',
                    interpolation='nearest')
         # Annotate the frame
@@ -167,7 +176,7 @@ class TargetPixelFile(object):
 
     def save_movie(self, output_fn=None, start=0, stop=-1, step=None, fps=15.,
                    dpi=None, min_percent=1., max_percent=95., cmap='gray',
-                   ignore_bad_frames=True):
+                   ignore_bad_frames=True, raw=False):
         """Save an animation.
 
         Parameters
@@ -209,9 +218,13 @@ class TargetPixelFile(object):
             The matplotlib color map name.  The default is 'gray',
             can also be e.g. 'gist_heat'.
 
-        ignore_bad_frames : boolean
-             If true, any frames which cannot be rendered will be ignored
-             without raising a `BadKeplerFrame` exception.
+        ignore_bad_frames : boolean, optional
+             If `True`, any frames which cannot be rendered will be ignored
+             without raising a ``BadKeplerFrame`` exception. Default: `True`.
+
+        raw : boolean, optional
+            If `True`, show the raw pixel counts rather than
+            the calibrated flux. Default: `False`.
         """
         if stop < 0:
             stop = self.no_frames + stop
@@ -225,13 +238,16 @@ class TargetPixelFile(object):
         # Determine cut levels for contrast stretching from a sample
         # First we try to use the first and last frame
         try:
-            sample = np.concatenate((self.flux(start), self.flux(stop)))
+            sample = np.concatenate(
+                                    (self.flux(start, raw=raw),
+                                     self.flux(stop, raw=raw))
+                                    )
         except BadKeplerFrame:
             # If the first or last frame are no good, then find first good frame
             success = False
             for idx in range(stop):
                 try:
-                    sample = self.flux(np.random.randint(stop))
+                    sample = self.flux(np.random.randint(stop), raw=raw)
                     break
                 except BadKeplerFrame:
                     pass
@@ -248,7 +264,7 @@ class TargetPixelFile(object):
             try:
                 viz.append(self.annotated_image(frame=frameno, dpi=dpi,
                                                 vmin=vmin, vmax=vmax,
-                                                cmap=cmap))
+                                                cmap=cmap, raw=raw))
             except BadKeplerFrame as e:
                 log.warning(e)
                 if not ignore_bad_frames:
@@ -289,6 +305,8 @@ def k2flix_main(args=None):
     parser.add_argument('--cmap', metavar='colormap_name', type=str,
                         default='gray', help='matplotlib color map name '
                                              '(default: gray)')
+    parser.add_argument('--raw', action='store_true',
+                        help='show the uncalibrated pixel counts ')
     parser.add_argument('filename', nargs='+',
                         help='path to one or more Kepler '
                              'Target Pixel Files (TPF)')
@@ -304,7 +322,8 @@ def k2flix_main(args=None):
                        dpi=args.dpi,
                        min_percent=args.min_percent,
                        max_percent=args.max_percent,
-                       cmap=args.cmap)
+                       cmap=args.cmap,
+                       raw=args.raw)
 
 # Example use
 if __name__ == '__main__':
