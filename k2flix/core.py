@@ -3,6 +3,7 @@
 """"Create movies or animated gifs from Kepler Target Pixel Files.
 
 Author: Geert Barentsen
+Contributor: Aleksa Sarai
 """
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
@@ -13,6 +14,7 @@ import warnings
 import imageio
 import argparse
 import numpy as np
+import io
 
 import matplotlib
 matplotlib.use('Agg')
@@ -25,6 +27,19 @@ from astropy.time import Time
 from astropy.utils.console import ProgressBar
 from astropy import log
 from astropy import visualization
+
+def find_renderer(fig):
+    if hasattr(fig.canvas, "get_renderer"):
+        # Some renderers are nice and just given us get_renderer.
+        renderer = fig.canvas.get_renderer()
+    else:
+        # We have to hack around ones that don't by printing the figure to a
+        # temporary file object. We can then access the Agg renderer which is
+        # cached after writing it. Yes, this is ugly but there isn't really
+        # another way around it.
+        fig.canvas.print_figure(io.BytesIO())
+        renderer = fig._cachedRenderer
+    return renderer
 
 
 class BadKeplerFrame(Exception):
@@ -134,12 +149,15 @@ class TargetPixelFile(object):
         if dpi is None:
             # Twitter timeline requires dimensions between 440x220 and 1024x512
             dpi = 440 / float(flx.shape[0])
+        # DPI needs to be a multiple of two for ffmpeg.
+        dpi += dpi % 2
         fontsize = 3. * flx.shape[0]
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
             flx[np.isnan(flx) | (flx < vmin)] = vmin
         # Create the frame
-        fig = pl.figure(figsize=flx.shape, dpi=dpi)
+        fig = pl.figure(figsize=flx.shape[::-1], dpi=dpi)
+        rendr = find_renderer(fig)
         ax = fig.add_subplot(111)
         transform = visualization.LogStretch() + visualization.ManualInterval(vmin=vmin, vmax=vmax)
         ax.matshow(transform(flx), aspect='auto',
@@ -163,6 +181,22 @@ class TargetPixelFile(object):
         txt2.set_path_effects([path_effects.Stroke(linewidth=fontsize/6.,
                                                    foreground='black'),
                                path_effects.Normal()])
+
+        # Get text size to make sure it doesn't overlap.
+        txt_bbox = txt.get_window_extent(rendr)
+        txt2_bbox = txt2.get_window_extent(rendr)
+
+        # Then scale the figure to match.
+        old_size = fig.get_size_inches()
+        ratio = max((1 + margin) * ((txt_bbox.x1 - txt_bbox.x0) +
+                                    (txt2_bbox.x1 - txt2_bbox.x0)) / fig.dpi + 2,
+                    old_size[0]) / old_size[0]
+        new_size = np.around(np.multiply(old_size, ratio))
+
+        # Size needs to be divisible by two for video.
+        new_size += np.mod(new_size, 2)
+        fig.set_size_inches(*new_size)
+
         ax.set_xticks([])
         ax.set_yticks([])
         ax.axis('off')
