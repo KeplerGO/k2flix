@@ -84,26 +84,92 @@ class TargetPixelFile(object):
         t = Time(bjd, format='jd')
         return t.iso
 
-    def flux(self, frame=0, raw=False):
-        """Returns the raw or calibrated flux data for a given frame."""
+    def flux(self, frame=0, raw=False, pedestal=1000.):
+        """Returns the raw or calibrated flux data for a given frame.
+
+        Parameters
+        ----------
+        frame : int
+            Frame number.
+
+        raw : bool
+            If `True` return the raw counts, if `False` return the calibrated
+            flux. (Default: `False`.)
+
+        pedestal : float
+            Value to add to the pixel counts.  This is useful to help prevent
+            the counts from being negative after background subtraction.
+            (Default: 1000.)
+        """
         if raw:
             flux_column = "RAW_CNTS"
         else:
             flux_column = "FLUX"
-        flux = self.hdulist[1].data[flux_column][frame].copy()
+        flux = self.hdulist[1].data[flux_column][frame].copy() + pedestal
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
             if np.all(np.isnan(flux)):
                 raise BadKeplerFrame('frame {0}: bad frame'.format(frame))
         return flux
 
-    def annotated_image(self, frame=0, dpi=None, vmin=1, vmax=5000,
-                        cmap='gray', raw=False):
-        """Returns the visualization (image array) for a single frame.
+    def cut_levels(self, min_percent=1., max_percent=95., raw=False,
+                   sample_start=0, sample_stop=-1, n_samples=3):
+        """Determine the cut levels for contrast stretching.
+
+        For speed, the levels are determined using only `n_samples` number
+        of frames selected between `sample_start` and `sample_stop`.
+
+        Returns
+        -------
+        vmin, vmax : float, float
+            Min and max cut levels.
+        """
+        if sample_stop < 0:
+            sample_stop = self.no_frames + sample_stop
+        # Build a sample of pixels
+        try:
+            sample = np.concatenate(
+                                    [
+                                     self.flux(frameno, raw=raw)
+                                     for frameno
+                                     in np.linspace(sample_start, sample_stop,
+                                                    n_samples, dtype=int)
+                                     ]
+                                    )
+        # If we hit a bad frame, then try to find a random set of good frames
+        except BadKeplerFrame:
+            success = False
+            # Try 20 times
+            for idx in range(20):
+                try:
+                    sample = np.concatenate(
+                                    [
+                                     self.flux(frameno, raw=raw)
+                                     for frameno
+                                     in np.random.randint(sample_start,
+                                                          sample_stop,
+                                                           n_samples)
+                                     ]
+                                    )
+                    break  # Leave loop on success
+                except BadKeplerFrame:
+                    pass  # Try again
+            if not success:
+                raise BadKeplerFrame("Could not find a good frame.")
+        # Finally, determine the cut levels, ignoring invalid value warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
+            vmin, vmax = np.percentile(sample[sample > 0],
+                                       [min_percent, max_percent])
+        return vmin, vmax
+
+    def create_figure(self, frameno=0, dpi=None, vmin=1, vmax=5000,
+                      cmap='gray', raw=False, annotate=True):
+        """Returns a matplotlib Figure object that visualizes a frame.
 
         Parameters
         ----------
-        frame : int
+        frameno : int
             Image number in the target pixel file.
 
         dpi : float, optional [dots per inch]
@@ -124,55 +190,56 @@ class TargetPixelFile(object):
             If `True`, show the raw pixel counts rather than
             the calibrated flux. Default: `False`.
 
+        annotate : boolean, optional
+            Annotate the Figure with a timestamp and target name?
+            (Default: `True`.)
+
         Returns
         -------
         image : array
             An array of unisgned integers of shape (x, y, 3),
             representing an RBG colour image x px wide and y px high.
         """
-        flx = self.flux(frame, raw=raw)
+        flx = self.flux(frameno, raw=raw)
         if dpi is None:
             # Twitter timeline requires dimensions between 440x220 and 1024x512
             dpi = 440 / float(flx.shape[0])
-        fontsize = 3. * flx.shape[0]
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
             flx[np.isnan(flx) | (flx < vmin)] = vmin
-        # Create the frame
+        # Create the figure
         fig = pl.figure(figsize=flx.shape, dpi=dpi)
         ax = fig.add_subplot(111)
-        transform = visualization.LogStretch() + visualization.ManualInterval(vmin=vmin, vmax=vmax)
+        transform = (visualization.LogStretch() +
+                     visualization.ManualInterval(vmin=vmin, vmax=vmax))
         ax.matshow(transform(flx), aspect='auto',
                    cmap=cmap, origin='lower',
                    interpolation='nearest')
-        # Annotate the frame
-        margin = 0.03
-        # Target name
-        txt = ax.text(margin, margin, self.target,
-                      family="monospace", fontsize=fontsize,
-                      color='white', transform=ax.transAxes)
-        # ISO timestamp
-        txt2 = ax.text(1 - margin, margin,
-                       self.timestamp(frame)[0:16],
-                       family="monospace", fontsize=fontsize,
-                       color='white', ha='right',
-                       transform=ax.transAxes)
-        txt.set_path_effects([path_effects.Stroke(linewidth=fontsize/6.,
-                                                  foreground='black'),
-                              path_effects.Normal()])
-        txt2.set_path_effects([path_effects.Stroke(linewidth=fontsize/6.,
-                                                   foreground='black'),
-                               path_effects.Normal()])
+        if annotate:  # Annotate the frame with a timestamp and target name?
+            fontsize = 3. * flx.shape[0]
+            margin = 0.03
+            # Target name
+            txt = ax.text(margin, margin, self.target,
+                          family="monospace", fontsize=fontsize,
+                          color='white', transform=ax.transAxes)
+            # ISO timestamp
+            txt2 = ax.text(1 - margin, margin,
+                           self.timestamp(frameno)[0:16],
+                           family="monospace", fontsize=fontsize,
+                           color='white', ha='right',
+                           transform=ax.transAxes)
+            txt.set_path_effects([path_effects.Stroke(linewidth=fontsize/6.,
+                                                      foreground='black'),
+                                  path_effects.Normal()])
+            txt2.set_path_effects([path_effects.Stroke(linewidth=fontsize/6.,
+                                                       foreground='black'),
+                                   path_effects.Normal()])
         ax.set_xticks([])
         ax.set_yticks([])
         ax.axis('off')
         fig.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
         fig.canvas.draw()
-        # Convert the frame to a numpy array
-        img = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
-        img = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-        pl.close(fig)
-        return img
+        return fig
 
     def save_movie(self, output_fn=None, start=0, stop=-1, step=None, fps=15.,
                    dpi=None, min_percent=1., max_percent=95., cmap='gray',
@@ -235,36 +302,21 @@ class TargetPixelFile(object):
         if output_fn is None:
             output_fn = self.filename.split('/')[-1] + '.gif'
         log.info('Writing {0}'.format(output_fn))
-        # Determine cut levels for contrast stretching from a sample
-        # First we try to use the first and last frame
-        try:
-            sample = np.concatenate(
-                                    (self.flux(start, raw=raw),
-                                     self.flux(stop, raw=raw))
-                                    )
-        except BadKeplerFrame:
-            # If the first or last frame are no good, then find first good frame
-            success = False
-            for idx in range(stop):
-                try:
-                    sample = self.flux(np.random.randint(stop), raw=raw)
-                    break
-                except BadKeplerFrame:
-                    pass
-            if not success:
-                raise BadKeplerFrame("Could not find a good frame.")
-
-        with warnings.catch_warnings():
-            warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
-            vmin, vmax = np.percentile(sample[sample > 0],
-                                       [min_percent, max_percent])
+        # Determine cut levels for contrast stretching from a sample of pixels
+        vmin, vmax = self.cut_levels(min_percent=min_percent,
+                                     max_percent=max_percent,
+                                     raw=raw)
         # Create the movie frames
         viz = []
         for frameno in ProgressBar(np.arange(start, stop+1, step, dtype=int)):
             try:
-                viz.append(self.annotated_image(frame=frameno, dpi=dpi,
-                                                vmin=vmin, vmax=vmax,
-                                                cmap=cmap, raw=raw))
+                fig = self.create_figure(frameno=frameno, dpi=dpi,
+                                         vmin=vmin, vmax=vmax,
+                                         cmap=cmap, raw=raw)
+                img = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
+                img = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+                pl.close(fig)  # Avoids memory leak!
+                viz.append(img)
             except BadKeplerFrame as e:
                 log.warning(e)
                 if not ignore_bad_frames:
@@ -278,7 +330,7 @@ class TargetPixelFile(object):
 
 
 def k2flix_main(args=None):
-    """Script to convert Kepler pixel data (TPF files) to a movie.""" 
+    """Script to convert Kepler pixel data (TPF files) to a movie."""
     parser = argparse.ArgumentParser(
         description="Converts a Target Pixel File (TPF) from NASA's "
                     "Kepler/K2 spacecraft into a movie or animated gif.")

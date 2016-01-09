@@ -17,8 +17,8 @@ class TestCore():
     def test_flux(self):
         assert self.tpf.flux(500).shape == (15, 16)
 
-    def test_annotated_image(self):
-        tmp = self.tpf.annotated_image(1000)
+    def test_create_figure(self):
+        tmp = self.tpf.create_figure(1000)
 
     def test_save_gif(self, tmpdir):
         moviepath = tmpdir.join('test.gif')
