@@ -31,6 +31,7 @@ setup(name='k2flix',
                         'astropy>=0.4',
                         'imageio>=1'],
       entry_points=entry_points,
+      keywords="kepler k2 astrophysics",
       classifiers=[
           "Development Status :: 5 - Production/Stable",
           "License :: OSI Approved :: MIT License",
