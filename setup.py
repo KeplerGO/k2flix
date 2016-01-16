@@ -16,7 +16,7 @@ entry_points = {'console_scripts': [
 ]}
 
 setup(name='k2flix',
-      version='1.0.0',
+      version='1.1.dev',
       description="Create beautiful quicklook movies "
                   "from the pixel data observed "
                   "by NASA's Kepler spacecraft.",
