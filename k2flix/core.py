@@ -201,22 +201,28 @@ class TargetPixelFile(object):
             representing an RBG colour image x px wide and y px high.
         """
         flx = self.flux(frameno, raw=raw)
+        shape = list(flx.shape)
+        # Determine the figsize and dpi
         if dpi is None:
             # Twitter timeline requires dimensions between 440x220 and 1024x512
-            dpi = 440 / float(flx.shape[0])
+            # so we make 440 the default
+            dpi = 440 / float(shape[0])
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
             flx[np.isnan(flx) | (flx < vmin)] = vmin
-        # Create the figure
-        fig = pl.figure(figsize=flx.shape, dpi=dpi)
-        ax = fig.add_subplot(111)
+        # libx264 require the height to be divisible by 2, we ensure this here:
+        shape[1] -= ((shape[1] * dpi) % 2) / dpi
+        # Create the figureand display the flux image using matshow
+        fig = pl.figure(figsize=shape, dpi=dpi)
+        # Display the image using matshow
+        ax = fig.add_subplot(1, 1, 1)
         transform = (visualization.LogStretch() +
                      visualization.ManualInterval(vmin=vmin, vmax=vmax))
         ax.matshow(transform(flx), aspect='auto',
                    cmap=cmap, origin='lower',
                    interpolation='nearest')
         if annotate:  # Annotate the frame with a timestamp and target name?
-            fontsize = 3. * flx.shape[0]
+            fontsize = 3. * shape[0]
             margin = 0.03
             # Target name
             txt = ax.text(margin, margin, self.target,
@@ -334,7 +340,8 @@ def k2flix_main(args=None):
     parser = argparse.ArgumentParser(
         description="Converts a Target Pixel File (TPF) from NASA's "
                     "Kepler/K2 spacecraft into a movie or animated gif.")
-    parser.add_argument('-o', metavar='filename', type=str, default=None,
+    parser.add_argument('-o', '--output', metavar='filename',
+                        type=str, default=None,
                         help='output filename (default: gif with the same name'
                              ' as the input file)')
     parser.add_argument('--start', metavar='IDX', type=int, default=0,
@@ -366,7 +373,7 @@ def k2flix_main(args=None):
 
     for fn in args.filename:
         tpf = TargetPixelFile(fn)
-        tpf.save_movie(output_fn=args.o,
+        tpf.save_movie(output_fn=args.output,
                        start=args.start,
                        stop=args.stop,
                        step=args.step,
