@@ -55,6 +55,6 @@ target/
 
 # Custom additions
 sandbox
-c1-urls.txt
+*urls.txt
 secrets.py
 TODO
