@@ -27,6 +27,31 @@ from astropy import log
 from astropy import visualization
 
 
+# The meaning of the various flags are described in the Kepler Archive Manual
+KEPLER_QUALITY_FLAGS = {
+    "1": "Attitude tweak",
+    "2": "Safe mode",
+    "4": "Coarse point",
+    "8": "Earth point",
+    "16": "Zero crossing",
+    "32": "Desaturation event",
+    "64": "Argabrightening",
+    "128": "Cosmic ray",
+    "256": "Manual exclude",
+    "1024": "Sudden sensitivity dropout",
+    "2048": "Impulsive outlier",
+    "4096": "Argabrightening",
+    "8192": "Cosmic ray",
+    "16384": "Detector anomaly",
+    "32768": "No fine point",
+    "65536": "No data",
+    "131072": "Rolling band",
+    "262144": "Rolling band",
+    "545288": "Possible thruster firing",
+    "2097152": "Thruster firing"
+}
+
+
 class BadKeplerFrame(Exception):
     """Raised if a frame is empty."""
     pass
@@ -84,6 +109,15 @@ class TargetPixelFile(object):
                + self.hdulist[1].header['BJDREFF'])
         t = Time(bjd, format='jd')
         return t.iso
+
+    def quality_flags(self, frame):
+        """Returns a list of strings describing the quality flags raised."""
+        quality = self.hdulist[1].data['QUALITY'][frame]
+        flags = []
+        for flag in KEPLER_QUALITY_FLAGS.keys():
+            if quality & int(flag) > 0:
+                flags.append(KEPLER_QUALITY_FLAGS[flag])
+        return flags
 
     def flux(self, frame=0, raw=False, pedestal=1000.):
         """Returns the raw or calibrated flux data for a given frame.
@@ -165,7 +199,8 @@ class TargetPixelFile(object):
         return vmin, vmax
 
     def create_figure(self, frameno=0, dpi=None, vmin=1, vmax=5000,
-                      cmap='gray', raw=False, annotate=True, cadenceno=False):
+                      cmap='gray', raw=False, annotate=True,
+                      cadenceno=False, show_flags=False):
         """Returns a matplotlib Figure object that visualizes a frame.
 
         Parameters
@@ -197,7 +232,11 @@ class TargetPixelFile(object):
 
         cadenceno : boolean, optional
             Show the cadence number instead of the timestamp?
-            (Default: `True`.)
+            (Default: `False`.)
+
+        show_flags : boolean, optional
+            Show the quality flags?
+            (Default: `False`.)
 
         Returns
         -------
@@ -229,11 +268,14 @@ class TargetPixelFile(object):
         if annotate:  # Annotate the frame with a timestamp and target name?
             fontsize = 3. * shape[0]
             margin = 0.03
-            # Target name
+            # Print target name in lower left corner
             txt = ax.text(margin, margin, self.target,
                           family="monospace", fontsize=fontsize,
                           color='white', transform=ax.transAxes)
-            # ISO timestamp
+            txt.set_path_effects([path_effects.Stroke(linewidth=fontsize/6.,
+                                                      foreground='black'),
+                                  path_effects.Normal()])
+            # Print ISO timestamp or cadence number in lower right corner
             if cadenceno:
                 timestring = self.hdulist[1].data['CADENCENO'][frameno]
             else:
@@ -242,12 +284,21 @@ class TargetPixelFile(object):
                            family="monospace", fontsize=fontsize,
                            color='white', ha='right',
                            transform=ax.transAxes)
-            txt.set_path_effects([path_effects.Stroke(linewidth=fontsize/6.,
-                                                      foreground='black'),
-                                  path_effects.Normal()])
             txt2.set_path_effects([path_effects.Stroke(linewidth=fontsize/6.,
                                                        foreground='black'),
                                    path_effects.Normal()])
+            # Print quality flags in upper right corner
+            if show_flags:
+                flags = self.quality_flags(frameno)
+                if len(flags) > 0:
+                    txt3 = ax.text(margin, 1 - margin, '\n'.join(flags),
+                                   family="monospace", fontsize=fontsize*1.3,
+                                   color='white', ha='left', va='top',
+                                   transform=ax.transAxes,
+                                   linespacing=1.5, backgroundcolor='red')
+                    txt3.set_path_effects([path_effects.Stroke(linewidth=fontsize/6.,
+                                                               foreground='black'),
+                                           path_effects.Normal()])
         ax.set_xticks([])
         ax.set_yticks([])
         ax.axis('off')
@@ -257,7 +308,8 @@ class TargetPixelFile(object):
 
     def save_movie(self, output_fn=None, start=0, stop=-1, step=None, fps=15.,
                    dpi=None, min_percent=1., max_percent=95., cmap='gray',
-                   cadenceno=False, raw=False, ignore_bad_frames=True,):
+                   cadenceno=False, show_flags=False, raw=False,
+                   ignore_bad_frames=True,):
         """Save an animation.
 
         Parameters
@@ -307,6 +359,9 @@ class TargetPixelFile(object):
             If `True`, show the cadence number in each frame rather than
             the timestamp.
 
+        show_flags : boolean, optional
+            If `True`, annotate the quality flags if set.
+
         ignore_bad_frames : boolean, optional
              If `True`, any frames which cannot be rendered will be ignored
              without raising a ``BadKeplerFrame`` exception. Default: `True`.
@@ -330,13 +385,14 @@ class TargetPixelFile(object):
             try:
                 fig = self.create_figure(frameno=frameno, dpi=dpi,
                                          vmin=vmin, vmax=vmax, cmap=cmap,
-                                         raw=raw, cadenceno=cadenceno)
+                                         raw=raw, cadenceno=cadenceno,
+                                         show_flags=show_flags)
                 img = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
                 img = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
                 pl.close(fig)  # Avoids memory leak!
                 viz.append(img)
             except BadKeplerFrame as e:
-                log.warning(e)
+                log.debug(e)
                 if not ignore_bad_frames:
                     raise e
         # Save the output as a movie
@@ -378,8 +434,10 @@ def k2flix_main(args=None):
                                              '(default: gray)')
     parser.add_argument('--cadenceno', action='store_true',
                         help='show the cadence number instead of the timestamp')
+    parser.add_argument('--flags', action='store_true',
+                        help='show quality flags')
     parser.add_argument('--raw', action='store_true',
-                        help='show the uncalibrated pixel counts ')
+                        help="show the uncalibrated pixel data ('RAW_CNTS')")
     parser.add_argument('filename', nargs='+',
                         help='path to one or more Kepler '
                              'Target Pixel Files (TPF)')
@@ -397,6 +455,7 @@ def k2flix_main(args=None):
                        max_percent=args.max_percent,
                        cmap=args.cmap,
                        cadenceno=args.cadenceno,
+                       show_flags=args.flags,
                        raw=args.raw)
 
 # Example use
