@@ -31,6 +31,7 @@ class BadKeplerFrame(Exception):
     """Raised if a frame is empty."""
     pass
 
+
 class TargetPixelFile(object):
     """Represent a Target Pixel File (TPC) from the Kepler spacecraft.
 
@@ -164,7 +165,7 @@ class TargetPixelFile(object):
         return vmin, vmax
 
     def create_figure(self, frameno=0, dpi=None, vmin=1, vmax=5000,
-                      cmap='gray', raw=False, annotate=True):
+                      cmap='gray', raw=False, annotate=True, cadenceno=False):
         """Returns a matplotlib Figure object that visualizes a frame.
 
         Parameters
@@ -192,6 +193,10 @@ class TargetPixelFile(object):
 
         annotate : boolean, optional
             Annotate the Figure with a timestamp and target name?
+            (Default: `True`.)
+
+        cadenceno : boolean, optional
+            Show the cadence number instead of the timestamp?
             (Default: `True`.)
 
         Returns
@@ -229,8 +234,11 @@ class TargetPixelFile(object):
                           family="monospace", fontsize=fontsize,
                           color='white', transform=ax.transAxes)
             # ISO timestamp
-            txt2 = ax.text(1 - margin, margin,
-                           self.timestamp(frameno)[0:16],
+            if cadenceno:
+                timestring = self.hdulist[1].data['CADENCENO'][frameno]
+            else:
+                timestring = self.timestamp(frameno)[0:16]
+            txt2 = ax.text(1 - margin, margin, timestring,
                            family="monospace", fontsize=fontsize,
                            color='white', ha='right',
                            transform=ax.transAxes)
@@ -249,7 +257,7 @@ class TargetPixelFile(object):
 
     def save_movie(self, output_fn=None, start=0, stop=-1, step=None, fps=15.,
                    dpi=None, min_percent=1., max_percent=95., cmap='gray',
-                   ignore_bad_frames=True, raw=False):
+                   cadenceno=False, raw=False, ignore_bad_frames=True,):
         """Save an animation.
 
         Parameters
@@ -291,13 +299,17 @@ class TargetPixelFile(object):
             The matplotlib color map name.  The default is 'gray',
             can also be e.g. 'gist_heat'.
 
-        ignore_bad_frames : boolean, optional
-             If `True`, any frames which cannot be rendered will be ignored
-             without raising a ``BadKeplerFrame`` exception. Default: `True`.
-
         raw : boolean, optional
             If `True`, show the raw pixel counts rather than
             the calibrated flux. Default: `False`.
+
+        cadenceno : boolean, optional
+            If `True`, show the cadence number in each frame rather than
+            the timestamp.
+
+        ignore_bad_frames : boolean, optional
+             If `True`, any frames which cannot be rendered will be ignored
+             without raising a ``BadKeplerFrame`` exception. Default: `True`.
         """
         if stop < 0:
             stop = self.no_frames + stop
@@ -317,8 +329,8 @@ class TargetPixelFile(object):
         for frameno in ProgressBar(np.arange(start, stop+1, step, dtype=int)):
             try:
                 fig = self.create_figure(frameno=frameno, dpi=dpi,
-                                         vmin=vmin, vmax=vmax,
-                                         cmap=cmap, raw=raw)
+                                         vmin=vmin, vmax=vmax, cmap=cmap,
+                                         raw=raw, cadenceno=cadenceno)
                 img = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
                 img = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
                 pl.close(fig)  # Avoids memory leak!
@@ -364,6 +376,8 @@ def k2flix_main(args=None):
     parser.add_argument('--cmap', metavar='colormap_name', type=str,
                         default='gray', help='matplotlib color map name '
                                              '(default: gray)')
+    parser.add_argument('--cadenceno', action='store_true',
+                        help='show the cadence number instead of the timestamp')
     parser.add_argument('--raw', action='store_true',
                         help='show the uncalibrated pixel counts ')
     parser.add_argument('filename', nargs='+',
@@ -382,6 +396,7 @@ def k2flix_main(args=None):
                        min_percent=args.min_percent,
                        max_percent=args.max_percent,
                        cmap=args.cmap,
+                       cadenceno=args.cadenceno,
                        raw=args.raw)
 
 # Example use
