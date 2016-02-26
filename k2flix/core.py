@@ -9,10 +9,11 @@ from __future__ import (absolute_import, division, print_function,
 
 __all__ = ["TargetPixelFile"]
 
-import warnings
-import imageio
 import argparse
+import imageio
 import numpy as np
+from tqdm import tqdm
+import warnings
 
 import matplotlib
 matplotlib.use('Agg')
@@ -22,7 +23,6 @@ import matplotlib.patheffects as path_effects
 
 from astropy.io import fits
 from astropy.time import Time
-from astropy.utils.console import ProgressBar
 from astropy import log
 from astropy import visualization
 
@@ -319,14 +319,14 @@ class TargetPixelFile(object):
                 step = 1
         if output_fn is None:
             output_fn = self.filename.split('/')[-1] + '.gif'
-        log.info('Writing {0}'.format(output_fn))
+        print('Writing {0}'.format(output_fn))
         # Determine cut levels for contrast stretching from a sample of pixels
         vmin, vmax = self.cut_levels(min_percent=min_percent,
                                      max_percent=max_percent,
                                      raw=raw)
         # Create the movie frames
         viz = []
-        for frameno in ProgressBar(np.arange(start, stop+1, step, dtype=int)):
+        for frameno in tqdm(np.arange(start, stop+1, step, dtype=int)):
             try:
                 fig = self.create_figure(frameno=frameno, dpi=dpi,
                                          vmin=vmin, vmax=vmax, cmap=cmap,
