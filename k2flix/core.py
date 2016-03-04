@@ -87,15 +87,19 @@ class TargetPixelFile(object):
         return self.hdulist[0].header['DEC_OBJ']
 
     def bjd(self, frameno):
-        """Get the Kepler Barycentric Julian Day for a given frame.
+        """Get the Barycentric Julian Date for a given frame."""
+        return (self.hdulist[1].data['TIME'][frameno] +
+                self.hdulist[1].header['BJDREFI'] +
+                self.hdulist[1].header['BJDREFF'])
+
+    def bkjd(self, frameno):
+        """Get the Barycentric Kepler Julian Day (BKJD) for a given frame.
 
         Kepler Barycentric Julian Day is a Julian day minus 2454833.0 (UTC=January
         1, 2009 12:00:00) and corrected to be the arrival times at the barycenter
         of the Solar System. See Section 2.3.2 in the Kepler Archive Manual.
         """
-        return (self.hdulist[1].data['TIME'][frameno] +
-                self.hdulist[1].header['BJDREFI'] +
-                self.hdulist[1].header['BJDREFF'])
+        return self.bjd(frameno) - 2454833.
 
     def jd(self, frameno):
         """Get the Julian Day for a given frame."""
@@ -116,7 +120,7 @@ class TargetPixelFile(object):
             Index of the image in the file, starting from zero.
 
         time_format : str
-            One of 'iso', 'jd', 'mjd', 'cadence'.
+            One of 'iso', 'jd', 'mjd', 'bjd', 'bkjd', or 'cadence'.
 
         Returns
         -------
@@ -124,11 +128,15 @@ class TargetPixelFile(object):
             Appropriately formatted timestamp.
         """
         if time_format == 'iso':
-            return Time(self.jd(frameno), format='jd').iso[0:16]
+            return Time(self.jd(frameno), format='jd').iso[0:19]
         elif time_format == 'jd':
             return 'JD {:.2f}'.format(self.jd(frameno))
         elif time_format == 'mjd':
             return 'MJD {:.2f}'.format(self.mjd(frameno))
+        elif time_format == 'bjd':
+            return 'BJD {:.2f}'.format(self.bjd(frameno))
+        elif time_format == 'bkjd':
+            return 'BKJD {:.2f}'.format(self.bkjd(frameno))
         elif time_format == 'cadence':
             return 'Cadence {:d}'.format(self.hdulist[1].data['CADENCENO'][frameno])
 
@@ -456,6 +464,10 @@ def k2flix_main(args=None):
                        help='show the Julian Day')
     group.add_argument('--mjd', action='store_true',
                        help='show the Modified Julian Day')
+    group.add_argument('--bjd', action='store_true',
+                       help='show the Barycentric Julian Day')
+    group.add_argument('--bkjd', action='store_true',
+                       help='show the Bareycentric Kepler Julian Day')
     group.add_argument('--cadence', action='store_true',
                        help='show the cadence number')
 
@@ -466,6 +478,10 @@ def k2flix_main(args=None):
         time_format = 'jd'
     elif args.mjd:
         time_format = 'mjd'
+    elif args.bjd:
+        time_format = 'bjd'
+    elif args.bkjd:
+        time_format = 'bkjd'
     elif args.cadence:
         time_format = 'cadence'
     else:

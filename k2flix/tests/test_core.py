@@ -11,8 +11,8 @@ class TestCore():
         self.tpf = TargetPixelFile(url)
 
     def test_time(self):
-        assert self.tpf.timestamp(0)[0:19] == '2014-05-30 16:16:51'
-        assert self.tpf.timestamp(900)[0:19] == '2014-06-18 01:36:52'
+        assert self.tpf.timestamp(0)[0:19] == '2014-05-30 16:09:28'
+        assert self.tpf.timestamp(900)[0:19] == '2014-06-18 01:31:25'
 
     def test_flux(self):
         assert self.tpf.flux(500).shape == (15, 16)
