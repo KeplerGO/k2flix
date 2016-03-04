@@ -86,45 +86,67 @@ class TargetPixelFile(object):
     def dec(self):
         return self.hdulist[0].header['DEC_OBJ']
 
-    def timestamp(self, frame):
+    def bjd(self, frameno):
+        """Get the Kepler Barycentric Julian Day for a given frame.
+
+        Kepler Barycentric Julian Day is a Julian day minus 2454833.0 (UTC=January
+        1, 2009 12:00:00) and corrected to be the arrival times at the barycenter
+        of the Solar System. See Section 2.3.2 in the Kepler Archive Manual.
+        """
+        return (self.hdulist[1].data['TIME'][frameno] +
+                self.hdulist[1].header['BJDREFI'] +
+                self.hdulist[1].header['BJDREFF'])
+
+    def jd(self, frameno):
+        """Get the Julian Day for a given frame."""
+        return (self.bjd(frameno) -
+                self.hdulist[1].data['TIMECORR'][frameno] +
+                (0.25 + 0.62 * (5 - self.hdulist[1].header['TIMSLICE'])) / (86400.))
+
+    def mjd(self, frameno):
+        """Get the Modified Julian Day for a given frame."""
+        return self.jd(frameno) - 2400000.5
+
+    def timestamp(self, frameno, time_format='iso'):
         """Returns the ISO timestamp for a given frame number.
 
         Parameters
         ----------
-        frame : int
+        frameno : int
             Index of the image in the file, starting from zero.
+
+        time_format : str
+            One of 'iso', 'jd', 'mjd', 'cadence'.
 
         Returns
         -------
         timestamp : str
-            ISO-formatted timestamp "YYYY-MM-DD HH:MM:SS"
+            Appropriately formatted timestamp.
         """
-        # Note: we are using barycentric julian date;
-        # see Kepler Archive Manual Sect. 2.3.2
-        time_value = self.hdulist[1].data['TIME'][frame]
-        if np.isnan(time_value):
-            raise BadKeplerFrame('frame {0}: empty time value'.format(frame))
-        bjd = (time_value
-               + self.hdulist[1].header['BJDREFI']
-               + self.hdulist[1].header['BJDREFF'])
-        t = Time(bjd, format='jd')
-        return t.iso
+        if time_format == 'iso':
+            return Time(self.jd(frameno), format='jd').iso[0:16]
+        elif time_format == 'jd':
+            return 'JD {:.2f}'.format(self.jd(frameno))
+        elif time_format == 'mjd':
+            return 'MJD {:.2f}'.format(self.mjd(frameno))
+        elif time_format == 'cadence':
+            return 'Cadence {:d}'.format(self.hdulist[1].data['CADENCENO'][frameno])
 
-    def quality_flags(self, frame):
+    def quality_flags(self, frameno):
         """Returns a list of strings describing the quality flags raised."""
-        quality = self.hdulist[1].data['QUALITY'][frame]
+        quality = self.hdulist[1].data['QUALITY'][frameno]
         flags = []
         for flag in KEPLER_QUALITY_FLAGS.keys():
             if quality & int(flag) > 0:
                 flags.append(KEPLER_QUALITY_FLAGS[flag])
         return flags
 
-    def flux(self, frame=0, raw=False, pedestal=1000.):
+    def flux(self, frameno=0, raw=False, pedestal=1000.):
         """Returns the raw or calibrated flux data for a given frame.
 
         Parameters
         ----------
-        frame : int
+        frameno : int
             Frame number.
 
         raw : bool
@@ -140,11 +162,11 @@ class TargetPixelFile(object):
             flux_column = "RAW_CNTS"
         else:
             flux_column = "FLUX"
-        flux = self.hdulist[1].data[flux_column][frame].copy() + pedestal
+        flux = self.hdulist[1].data[flux_column][frameno].copy() + pedestal
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
             if np.all(np.isnan(flux)):
-                raise BadKeplerFrame('frame {0}: bad frame'.format(frame))
+                raise BadKeplerFrame('frame {0}: bad frame'.format(frameno))
         return flux
 
     def cut_levels(self, min_percent=1., max_percent=95., raw=False,
@@ -200,7 +222,7 @@ class TargetPixelFile(object):
 
     def create_figure(self, frameno=0, dpi=None, vmin=1, vmax=5000,
                       cmap='gray', raw=False, annotate=True,
-                      cadenceno=False, show_flags=False):
+                      time_format='iso', show_flags=False):
         """Returns a matplotlib Figure object that visualizes a frame.
 
         Parameters
@@ -229,10 +251,6 @@ class TargetPixelFile(object):
         annotate : boolean, optional
             Annotate the Figure with a timestamp and target name?
             (Default: `True`.)
-
-        cadenceno : boolean, optional
-            Show the cadence number instead of the timestamp?
-            (Default: `False`.)
 
         show_flags : boolean, optional
             Show the quality flags?
@@ -275,12 +293,9 @@ class TargetPixelFile(object):
             txt.set_path_effects([path_effects.Stroke(linewidth=fontsize/6.,
                                                       foreground='black'),
                                   path_effects.Normal()])
-            # Print ISO timestamp or cadence number in lower right corner
-            if cadenceno:
-                timestring = self.hdulist[1].data['CADENCENO'][frameno]
-            else:
-                timestring = self.timestamp(frameno)[0:16]
-            txt2 = ax.text(1 - margin, margin, timestring,
+            # Print a timestring in the lower right corner
+            txt2 = ax.text(1 - margin, margin,
+                           self.timestamp(frameno, time_format=time_format),
                            family="monospace", fontsize=fontsize,
                            color='white', ha='right',
                            transform=ax.transAxes)
@@ -308,7 +323,7 @@ class TargetPixelFile(object):
 
     def save_movie(self, output_fn=None, start=0, stop=-1, step=None, fps=15.,
                    dpi=None, min_percent=1., max_percent=95., cmap='gray',
-                   cadenceno=False, show_flags=False, raw=False,
+                   time_format='iso', show_flags=False, raw=False,
                    ignore_bad_frames=True,):
         """Save an animation.
 
@@ -355,10 +370,6 @@ class TargetPixelFile(object):
             If `True`, show the raw pixel counts rather than
             the calibrated flux. Default: `False`.
 
-        cadenceno : boolean, optional
-            If `True`, show the cadence number in each frame rather than
-            the timestamp.
-
         show_flags : boolean, optional
             If `True`, annotate the quality flags if set.
 
@@ -385,7 +396,7 @@ class TargetPixelFile(object):
             try:
                 fig = self.create_figure(frameno=frameno, dpi=dpi,
                                          vmin=vmin, vmax=vmax, cmap=cmap,
-                                         raw=raw, cadenceno=cadenceno,
+                                         raw=raw, time_format=time_format,
                                          show_flags=show_flags)
                 img = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
                 img = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
@@ -432,16 +443,33 @@ def k2flix_main(args=None):
     parser.add_argument('--cmap', metavar='colormap_name', type=str,
                         default='gray', help='matplotlib color map name '
                                              '(default: gray)')
-    parser.add_argument('--cadenceno', action='store_true',
-                        help='show the cadence number instead of the timestamp')
-    parser.add_argument('--flags', action='store_true',
-                        help='show quality flags')
     parser.add_argument('--raw', action='store_true',
                         help="show the uncalibrated pixel data ('RAW_CNTS')")
+    parser.add_argument('--flags', action='store_true',
+                        help='show quality flags')
     parser.add_argument('filename', nargs='+',
                         help='path to one or more Kepler '
                              'Target Pixel Files (TPF)')
+
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--jd', action='store_true',
+                       help='show the Julian Day')
+    group.add_argument('--mjd', action='store_true',
+                       help='show the Modified Julian Day')
+    group.add_argument('--cadence', action='store_true',
+                       help='show the cadence number')
+
     args = parser.parse_args(args)
+
+    # What is the time format to use?
+    if args.jd:
+        time_format = 'jd'
+    elif args.mjd:
+        time_format = 'mjd'
+    elif args.cadence:
+        time_format = 'cadence'
+    else:
+        time_format = 'iso'
 
     for fn in args.filename:
         tpf = TargetPixelFile(fn)
@@ -454,7 +482,7 @@ def k2flix_main(args=None):
                        min_percent=args.min_percent,
                        max_percent=args.max_percent,
                        cmap=args.cmap,
-                       cadenceno=args.cadenceno,
+                       time_format=time_format,
                        show_flags=args.flags,
                        raw=args.raw)
 
