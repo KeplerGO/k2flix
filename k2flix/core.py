@@ -26,8 +26,11 @@ from astropy.time import Time
 from astropy import log
 from astropy import visualization
 
+###
+# Kepler constants
+###
 
-# The meaning of the various flags are described in the Kepler Archive Manual
+# Quality flags, from the Kepler Archive Manual
 KEPLER_QUALITY_FLAGS = {
     "1": "Attitude tweak",
     "2": "Safe mode",
@@ -52,8 +55,43 @@ KEPLER_QUALITY_FLAGS = {
 }
 
 
+###
+# Kepler time functions
+###
+
+def bkjd_to_bjd(bkjd, offset=2454833.):
+    """Barycentric Kepler Julian Date (BKJD) to Barycentric Julian Date (BJD).
+
+    Kepler Barycentric Julian Day is the value recorded in the 'TIME' column
+    in the official Kepler/K2 lightcurve and target pixel files.
+    It is a Julian day minus 2454833.0 (UTC=January 1, 2009 12:00:00)
+    and corrected to be the arrival times at the barycenter
+    of the Solar System. See Section 2.3.2 in the Kepler Archive Manual.
+    """
+    return bkjd + offset
+
+
+def bkjd_to_jd(bkjd, timecorr, timslice):
+    """Convert Barycentric Kepler Julian Date (BKJD) to Julian Date (JD)."""
+    return bkjd_to_bjd(bkjd) - timecorr + (0.25 + 0.62 * (5 - timslice)) / 86400.
+
+
+def bkjd_to_mjd(bkjd, timecorr, timslice):
+    """Convert Barycentric Kepler Julian Date (BKJD) to Modified Julian Date (MJD)."""
+    return bkjd_to_jd(bkjd, timecorr, timslice) - 2400000.5
+
+
+###
+# Helper classes
+###
+
 class BadKeplerFrame(Exception):
     """Raised if a frame is empty."""
+    pass
+
+
+class BadCadenceRange(Exception):
+    """Raised if a the range of frames is invalid."""
     pass
 
 
@@ -86,33 +124,57 @@ class TargetPixelFile(object):
     def dec(self):
         return self.hdulist[0].header['DEC_OBJ']
 
-    def bjd(self, frameno):
-        """Get the Barycentric Julian Date for a given frame."""
-        return (self.hdulist[1].data['TIME'][frameno] +
-                self.hdulist[1].header['BJDREFI'] +
-                self.hdulist[1].header['BJDREFF'])
+    def cadenceno(self, frameno=None):
+        """Returns the cadence number for a given frame, or all frames."""
+        if frameno is None:
+            return self.hdulist[1].data['CADENCENO']
+        return self.hdulist[1].data['CADENCENO'][frameno]
 
-    def bkjd(self, frameno):
+    def bkjd(self, frameno=None):
         """Get the Barycentric Kepler Julian Day (BKJD) for a given frame.
 
         Kepler Barycentric Julian Day is a Julian day minus 2454833.0 (UTC=January
         1, 2009 12:00:00) and corrected to be the arrival times at the barycenter
         of the Solar System. See Section 2.3.2 in the Kepler Archive Manual.
         """
-        return self.bjd(frameno) - 2454833.
+        if frameno is None:
+            return self.hdulist[1].data['TIME']
+        return self.hdulist[1].data['TIME'][frameno]
 
-    def jd(self, frameno):
+    def bjd(self, frameno=None):
+        """Get the Barycentric Julian Date for a given frame."""
+        return bkjd_to_bjd(self.bkjd(frameno))
+
+    def jd(self, frameno=None):
         """Get the Julian Day for a given frame."""
-        return (self.bjd(frameno) -
-                self.hdulist[1].data['TIMECORR'][frameno] +
-                (0.25 + 0.62 * (5 - self.hdulist[1].header['TIMSLICE'])) / (86400.))
+        if frameno is None:
+            timecorr = self.hdulist[1].data['TIMECORR']
+        else:
+            timecorr = self.hdulist[1].data['TIMECORR'][frameno]
+        return bkjd_to_jd(self.bkjd(frameno), timecorr, self.hdulist[1].header['TIMSLICE'])
 
-    def mjd(self, frameno):
+    def mjd(self, frameno=None):
         """Get the Modified Julian Day for a given frame."""
-        return self.jd(frameno) - 2400000.5
+        if frameno is None:
+            timecorr = self.hdulist[1].data['TIMECORR']
+        else:
+            timecorr = self.hdulist[1].data['TIMECORR'][frameno]
+        return bkjd_to_mjd(self.bkjd(frameno), timecorr, self.hdulist[1].header['TIMSLICE'])
 
-    def timestamp(self, frameno, time_format='iso'):
-        """Returns the ISO timestamp for a given frame number.
+    def time(self, time_format='bkjd'):
+        if time_format == 'jd':
+            return self.jd()
+        elif time_format == 'mjd':
+            return self.mjd()
+        elif time_format == 'bjd':
+            return self.bjd()
+        elif time_format == 'bkjd':
+            return self.bkjd()
+        elif time_format == 'cadence':
+            return self.cadenceno()
+
+    def timestamp(self, frameno, time_format='ut'):
+        """Returns the timestamp for a given frame number.
 
         Parameters
         ----------
@@ -120,14 +182,16 @@ class TargetPixelFile(object):
             Index of the image in the file, starting from zero.
 
         time_format : str
-            One of 'iso', 'jd', 'mjd', 'bjd', 'bkjd', or 'cadence'.
+            One of 'frameno', 'ut', jd', 'mjd', 'bjd', 'bkjd', or 'cadence'.
 
         Returns
         -------
         timestamp : str
             Appropriately formatted timestamp.
         """
-        if time_format == 'iso':
+        if time_format == 'frameno':
+            return 'Frame {}'.format(frameno)
+        elif time_format == 'ut':
             return Time(self.jd(frameno), format='jd').iso[0:19]
         elif time_format == 'jd':
             return 'JD {:.2f}'.format(self.jd(frameno))
@@ -138,7 +202,7 @@ class TargetPixelFile(object):
         elif time_format == 'bkjd':
             return 'BKJD {:.2f}'.format(self.bkjd(frameno))
         elif time_format == 'cadence':
-            return 'Cadence {:d}'.format(self.hdulist[1].data['CADENCENO'][frameno])
+            return 'Cadence {:d}'.format(self.cadenceno(frameno))
 
     def quality_flags(self, frameno):
         """Returns a list of strings describing the quality flags raised."""
@@ -230,7 +294,7 @@ class TargetPixelFile(object):
 
     def create_figure(self, frameno=0, dpi=None, vmin=1, vmax=5000,
                       cmap='gray', raw=False, annotate=True,
-                      time_format='iso', show_flags=False):
+                      time_format='ut', show_flags=False):
         """Returns a matplotlib Figure object that visualizes a frame.
 
         Parameters
@@ -329,9 +393,36 @@ class TargetPixelFile(object):
         fig.canvas.draw()
         return fig
 
-    def save_movie(self, output_fn=None, start=0, stop=-1, step=None, fps=15.,
-                   dpi=None, min_percent=1., max_percent=95., cmap='gray',
-                   time_format='iso', show_flags=False, raw=False,
+    def _frameno_range(self, start, stop, time_format):
+        """Returns the first and last frame numbers to use, given user input."""
+        # If no range was set, or the range is in a trivial format (frameno),
+        # or in a format we don't support ranges for (ut), then the range
+        # determination is straightforward:
+        if (start is None and stop is None) or time_format in ['frameno', 'ut']:
+            # Set defaults if necessary
+            if start is None:
+                start = 0
+            if stop is None:
+                stop = self.no_frames - 1
+            return start, stop
+
+        # Set defaults to cover all possible JD/MJD/BKJD/BJD/Cadenceno values
+        if start is None:
+            start = -9e99
+        if stop is None:
+            stop = 9e99
+        # Compute the times for all cadences and find the frame number range
+        times = self.time(time_format)
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
+            idx = np.where((times >= start) & (times <= stop))[0]
+        if len(idx) == 0:
+            raise BadCadenceRange('No frames found for {} = [{}, {}]'.format(time_format, start, stop))
+        return idx[0], idx[-1]
+
+    def save_movie(self, output_fn=None, start=None, stop=None, step=None,
+                   fps=15., dpi=None, min_percent=1., max_percent=95.,
+                   cmap='gray', time_format='ut', show_flags=False, raw=False,
                    ignore_bad_frames=True,):
         """Save an animation.
 
@@ -344,11 +435,12 @@ class TargetPixelFile(object):
             as the input FITS file.
 
         start : int
-            Number of the first frame in the TPF file to show.  Default is 0.
+            Number or time of the first frame to show.
+            If `None` (default), the first frame will be the start of the data.
 
         stop : int
-            Number of the last frame in the TPF file to show.
-            Default is -1 (i.e. the last frame).
+            Number or time of the last frame to show.
+            If `None` (default), the last frame will be the end of the data.
 
         step : int
             Spacing between frames.  Default is to set the stepsize
@@ -385,22 +477,22 @@ class TargetPixelFile(object):
              If `True`, any frames which cannot be rendered will be ignored
              without raising a ``BadKeplerFrame`` exception. Default: `True`.
         """
-        if stop < 0:
-            stop = self.no_frames + stop
-        if step is None:
-            step = int((stop - start) / 100)
-            if step < 1:
-                step = 1
         if output_fn is None:
             output_fn = self.filename.split('/')[-1] + '.gif'
-        print('Writing {0}'.format(output_fn))
         # Determine cut levels for contrast stretching from a sample of pixels
         vmin, vmax = self.cut_levels(min_percent=min_percent,
                                      max_percent=max_percent,
                                      raw=raw)
+        # Determine the first/last frame number and the step size
+        frameno_start, frameno_stop = self._frameno_range(start, stop, time_format)
+        if step is None:
+            step = int((frameno_stop - frameno_start) / 100)
+            if step < 1:
+                step = 1
         # Create the movie frames
+        print('Creating {0}'.format(output_fn))
         viz = []
-        for frameno in tqdm(np.arange(start, stop+1, step, dtype=int)):
+        for frameno in tqdm(np.arange(frameno_start, frameno_stop + 1, step, dtype=int)):
             try:
                 fig = self.create_figure(frameno=frameno, dpi=dpi,
                                          vmin=vmin, vmax=vmax, cmap=cmap,
@@ -431,24 +523,24 @@ def k2flix_main(args=None):
                         type=str, default=None,
                         help='output filename (default: gif with the same name'
                              ' as the input file)')
-    parser.add_argument('--start', metavar='IDX', type=int, default=0,
-                        help='first frame to show (default: 0)')
-    parser.add_argument('--stop', metavar='IDX', type=int, default=-1,
-                        help='last frame to show (default: -1)')
+    parser.add_argument('--start', type=float, default=None,
+                        help='time or number of the first frame to show (default: first cadence)')
+    parser.add_argument('--stop', type=float, default=None,
+                        help='time or number of the last frame to show (default: last cadence)')
     parser.add_argument('--step', type=int, default=None,
                         help='spacing between frames '
-                             '(default: output 100 frames)')
+                             '(default: show 100 frames)')
     parser.add_argument('--fps', type=float, default=15.,
                         help='frames per second (default: 15)')
     parser.add_argument('--dpi', type=float, default=None,
                         help='resolution of the output in dots per K2 pixel')
-    parser.add_argument('--min_percent', type=float, default=1.,
+    parser.add_argument('--min_percent', metavar='%', type=float, default=1.,
                         help='percentile value used to determine the '
                              'minimum cut level (default: 1.0)')
-    parser.add_argument('--max_percent', type=float, default=95.,
+    parser.add_argument('--max_percent', metavar='%', type=float, default=95.,
                         help='percentile value used to determine the '
                              'maximum cut level (default: 95.0)')
-    parser.add_argument('--cmap', metavar='colormap_name', type=str,
+    parser.add_argument('--cmap', type=str,
                         default='gray', help='matplotlib color map name '
                                              '(default: gray)')
     parser.add_argument('--raw', action='store_true',
@@ -460,6 +552,8 @@ def k2flix_main(args=None):
                              'Target Pixel Files (TPF)')
 
     group = parser.add_mutually_exclusive_group()
+    group.add_argument('--ut', action='store_true',
+                       help='show the UT timestamp')
     group.add_argument('--jd', action='store_true',
                        help='show the Julian Day')
     group.add_argument('--mjd', action='store_true',
@@ -474,7 +568,9 @@ def k2flix_main(args=None):
     args = parser.parse_args(args)
 
     # What is the time format to use?
-    if args.jd:
+    if args.ut:
+        time_format = 'ut'
+    elif args.jd:
         time_format = 'jd'
     elif args.mjd:
         time_format = 'mjd'
@@ -485,22 +581,25 @@ def k2flix_main(args=None):
     elif args.cadence:
         time_format = 'cadence'
     else:
-        time_format = 'iso'
+        time_format = 'frameno'
 
     for fn in args.filename:
-        tpf = TargetPixelFile(fn)
-        tpf.save_movie(output_fn=args.output,
-                       start=args.start,
-                       stop=args.stop,
-                       step=args.step,
-                       fps=args.fps,
-                       dpi=args.dpi,
-                       min_percent=args.min_percent,
-                       max_percent=args.max_percent,
-                       cmap=args.cmap,
-                       time_format=time_format,
-                       show_flags=args.flags,
-                       raw=args.raw)
+        try:
+            tpf = TargetPixelFile(fn)
+            tpf.save_movie(output_fn=args.output,
+                           start=args.start,
+                           stop=args.stop,
+                           step=args.step,
+                           fps=args.fps,
+                           dpi=args.dpi,
+                           min_percent=args.min_percent,
+                           max_percent=args.max_percent,
+                           cmap=args.cmap,
+                           time_format=time_format,
+                           show_flags=args.flags,
+                           raw=args.raw)
+        except Exception as e:
+            print('ERROR: {}'.format(e))
 
 # Example use
 if __name__ == '__main__':
