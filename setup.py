@@ -10,19 +10,22 @@ try:
 except (IOError, ImportError):
    long_description = open('README.md').read()
 
+# Load the __version__ variable without importing the package already
+exec(open('k2flix/version.py').read())
+
 # Command-line tools
 entry_points = {'console_scripts': [
     'k2flix = k2flix.core:k2flix_main'
 ]}
 
 setup(name='k2flix',
-      version='1.1.dev',
+      version=__version__,
       description="Create beautiful quicklook movies "
                   "from the pixel data observed "
                   "by NASA's Kepler spacecraft.",
       long_description=long_description,
       author='Geert Barentsen',
-      author_email='geert@barentsen.be',
+      author_email='hello@geert.io',
       license='MIT',
       url='http://barentsen.github.io/k2flix',
       packages=['k2flix'],
@@ -37,7 +40,8 @@ setup(name='k2flix',
           "Development Status :: 5 - Production/Stable",
           "License :: OSI Approved :: MIT License",
           "Operating System :: OS Independent",
-          "Programming Language :: Python",
+          "Programming Language :: Python :: 2.7",
+          "Programming Language :: Python :: 3",
           "Intended Audience :: Science/Research",
           "Topic :: Scientific/Engineering :: Astronomy",
           ],
