@@ -60,7 +60,8 @@ To see all the options, use the `--help` argument to see the full usage informat
 $ k2flix --help
 usage: k2flix [-h] [-o filename] [--start IDX] [--stop IDX] [--step STEP]
               [--fps FPS] [--dpi DPI] [--min_percent MIN_PERCENT]
-              [--max_percent MAX_PERCENT] [--cmap colormap_name]
+              [--max_percent MAX_PERCENT] [--cmap colormap_name] [--raw]
+              [--flags] [--jd | --mjd | --bjd | --bkjd | --cadence]
               filename [filename ...]
 
 Converts a Target Pixel File (TPF) from NASA's Kepler/K2 spacecraft into a
@@ -71,12 +72,13 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -o filename           output filename (default: gif with the same name as
+  -o filename, --output filename
+                        output filename (default: gif with the same name as
                         the input file)
   --start IDX           first frame to show (default: 0)
   --stop IDX            last frame to show (default: -1)
   --step STEP           spacing between frames (default: output 100 frames)
-  --fps FPS             frames per second (default: 5)
+  --fps FPS             frames per second (default: 15)
   --dpi DPI             resolution of the output in dots per K2 pixel
   --min_percent MIN_PERCENT
                         percentile value used to determine the minimum cut
@@ -85,6 +87,13 @@ optional arguments:
                         percentile value used to determine the maximum cut
                         level (default: 95.0)
   --cmap colormap_name  matplotlib color map name (default: gray)
+  --raw                 show the uncalibrated pixel data ('RAW_CNTS')
+  --flags               show quality flags
+  --jd                  show the Julian Day
+  --mjd                 show the Modified Julian Day
+  --bjd                 show the Barycentric Julian Day
+  --bkjd                show the Bareycentric Kepler Julian Day
+  --cadence             show the cadence number
 ```
 
 ### Citing
@@ -110,4 +119,4 @@ The code has been registered in the Astrophysics Source Code Library [[ascl:1503
 To report bugs and request features, please use the [issue tracker](https://github.com/barentsen/k2flix/issues). Code contributions are very welcome.
 
 ### License
-Copyright 2015 Geert Barentsen. K2flix is free software made available under the MIT License. For details see the LICENSE file.
+Copyright 2016 Geert Barentsen. K2flix is free software made available under the MIT License. For details see the LICENSE file.
