@@ -1,5 +1,12 @@
 #!/usr/bin/env python
+import os
+import sys
 from setuptools import setup
+
+
+if "publish" in sys.argv[-1]:
+    os.system("python setup.py sdist upload")
+    sys.exit()
 
 
 # PyPi requires reStructuredText instead of Markdown,
