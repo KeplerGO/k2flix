@@ -518,52 +518,49 @@ def k2flix_main(args=None):
     """Script to convert Kepler pixel data (TPF files) to a movie."""
     parser = argparse.ArgumentParser(
         description="Converts a Target Pixel File (TPF) from NASA's "
-                    "Kepler/K2 spacecraft into a movie or animated gif.")
-    parser.add_argument('-o', '--output', metavar='filename',
+                    "Kepler/K2 spacecraft into an animated gif (default) or MPEG-4 movie.")
+    parser.add_argument('--output', metavar='FILENAME',
                         type=str, default=None,
-                        help='output filename (default: gif with the same name'
-                             ' as the input file)')
+                        help='.gif or .mp4 output filename (default: gif with the same name as the input file)')
     parser.add_argument('--start', type=float, default=None,
-                        help='time or number of the first frame to show (default: first cadence)')
+                        help='first frame to show. Give the frame number (default 0), or a Julian Day if --jd/--mjd is set, or a cadence number if --cadence is set.')
     parser.add_argument('--stop', type=float, default=None,
-                        help='time or number of the last frame to show (default: last cadence)')
+                        help='final frame to show. Give the frame number (default: -1), or a Julian Day if --jd/--mjd is set, or a cadence number if --cadence is set.')
     parser.add_argument('--step', type=int, default=None,
                         help='spacing between frames '
                              '(default: show 100 frames)')
     parser.add_argument('--fps', type=float, default=15.,
                         help='frames per second (default: 15)')
     parser.add_argument('--dpi', type=float, default=None,
-                        help='resolution of the output in dots per K2 pixel')
+                        help='resolution of the output in dots per K2 pixel (default: choose a dpi that produces a 440px-wide image)')
     parser.add_argument('--min_percent', metavar='%', type=float, default=1.,
-                        help='percentile value used to determine the '
-                             'minimum cut level (default: 1.0)')
+                        help='minimum cut percentile (default: 1.0)')
     parser.add_argument('--max_percent', metavar='%', type=float, default=95.,
-                        help='percentile value used to determine the '
-                             'maximum cut level (default: 95.0)')
+                        help='maximum cut percentile (default: 95)')
     parser.add_argument('--cmap', type=str,
                         default='gray', help='matplotlib color map name '
                                              '(default: gray)')
     parser.add_argument('--raw', action='store_true',
                         help="show the uncalibrated pixel data ('RAW_CNTS')")
     parser.add_argument('--flags', action='store_true',
-                        help='show quality flags')
+                        help='show the quality flags')
     parser.add_argument('filename', nargs='+',
                         help='path to one or more Kepler '
                              'Target Pixel Files (TPF)')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--ut', action='store_true',
-                       help='show the UT timestamp')
+                       help='use Universal Time')
     group.add_argument('--jd', action='store_true',
-                       help='show the Julian Day')
+                       help='use Julian Day for annotation and --start/--stop')
     group.add_argument('--mjd', action='store_true',
-                       help='show the Modified Julian Day')
-    group.add_argument('--bjd', action='store_true',
-                       help='show the Barycentric Julian Day')
-    group.add_argument('--bkjd', action='store_true',
-                       help='show the Bareycentric Kepler Julian Day')
+                       help='use Modified Julian Day for annotation and --start/--stop')
+    #group.add_argument('--bjd', action='store_true',
+    #                   help='use Barycentric Julian Day  for annotation and --start/--stop')
+    #group.add_argument('--bkjd', action='store_true',
+    #                   help='use Barycentric Kepler Julian Day  for annotation and --start/--stop')
     group.add_argument('--cadence', action='store_true',
-                       help='show the cadence number')
+                       help='use Cadence Number  for annotation and --start/--stop')
 
     args = parser.parse_args(args)
 
