@@ -557,8 +557,8 @@ def k2flix_main(args=None):
                        help='use Modified Julian Day for annotation and --start/--stop')
     #group.add_argument('--bjd', action='store_true',
     #                   help='use Barycentric Julian Day  for annotation and --start/--stop')
-    #group.add_argument('--bkjd', action='store_true',
-    #                   help='use Barycentric Kepler Julian Day  for annotation and --start/--stop')
+    group.add_argument('--bkjd', action='store_true',
+                       help='use Kepler Julian Day for annotation and --start/--stop')
     group.add_argument('--cadence', action='store_true',
                        help='use Cadence Number  for annotation and --start/--stop')
 
@@ -571,8 +571,8 @@ def k2flix_main(args=None):
         time_format = 'jd'
     elif args.mjd:
         time_format = 'mjd'
-    elif args.bjd:
-        time_format = 'bjd'
+    #elif args.bjd:
+    #    time_format = 'bjd'
     elif args.bkjd:
         time_format = 'bkjd'
     elif args.cadence:
