@@ -43,7 +43,7 @@ K2flix can be used both as a command-line tool or using its Python API.
 Example
 -------
 Asteroids commonly pass in front of Kepler/K2 targets. 
-We can use k2flix to create a two-day animation of pixel data to demonstrates this::
+We can use k2flix to create a two-day animation of pixel data to count the number of asteroids whizzing past::
 
     $ k2flix --start 545 --stop 680 --step 1 --fps 12 http://archive.stsci.edu\
     /missions/k2/target_pixel_files/c1/201500000/72000/ktwo201572338-c01_lpd-targ.fits.gz
