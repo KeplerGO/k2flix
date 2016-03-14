@@ -3,19 +3,9 @@ import os
 import sys
 from setuptools import setup
 
-
 if "publish" in sys.argv[-1]:
     os.system("python setup.py sdist upload")
     sys.exit()
-
-
-# PyPi requires reStructuredText instead of Markdown,
-# so we convert our Markdown README for the long description
-try:
-   import pypandoc
-   long_description = pypandoc.convert('README.md', 'rst')
-except (IOError, ImportError):
-   long_description = open('README.md').read()
 
 # Load the __version__ variable without importing the package already
 exec(open('k2flix/version.py').read())
@@ -30,7 +20,7 @@ setup(name='k2flix',
       description="Create beautiful quicklook movies "
                   "from the pixel data observed "
                   "by NASA's Kepler spacecraft.",
-      long_description=long_description,
+      long_description=open('README.rst').read(),
       author='Geert Barentsen',
       author_email='hello@geert.io',
       license='MIT',
@@ -51,5 +41,5 @@ setup(name='k2flix',
           "Programming Language :: Python :: 3",
           "Intended Audience :: Science/Research",
           "Topic :: Scientific/Engineering :: Astronomy",
-          ],
+      ],
       )
