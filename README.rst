@@ -30,18 +30,20 @@ K2flix makes it easy to inspect the CCD pixel data
 obtained by `NASA's Kepler space telescope <http://keplerscience.nasa.gov>`_.
 The need for this tool arises from the fact that the two-wheeled extended Kepler mission, K2,
 is affected by new sources of noise -- including pointing jitter and foreground asteroids --
-which are more easy to spot by eye than by algorithm.
-The code takes Kepler's *Target Pixel Files (TPF)* as input
+which are more easily spotted by eye than by algorithm.
+
+This tool takes Kepler's *Target Pixel Files (TPF)* as input
 and turns them into contrast-stretched animated gifs or MPEG-4 movies.
 These *TPF files* are publically available from the 
 `Kepler archive <https://archive.stsci.edu/missions/kepler/target_pixel_files/>`_
 and the `K2 archive <https://archive.stsci.edu/missions/k2/target_pixel_files/>`_. 
+
 K2flix can be used both as a command-line tool or using its Python API.
 
 Example
 -------
 Asteroids commonly pass in front of Kepler/K2 targets. 
-How many can you spot in this example 2-day animation? ::
+We can use k2flix to create a two-day animation of pixel data to demonstrates this::
 
     $ k2flix --start 545 --stop 680 --step 1 --fps 12 http://archive.stsci.edu\
     /missions/k2/target_pixel_files/c1/201500000/72000/ktwo201572338-c01_lpd-targ.fits.gz
