@@ -51,7 +51,7 @@ KEPLER_QUALITY_FLAGS = {
     "131072": "Rolling band",
     "262144": "Rolling band",
     "545288": "Possible thruster firing",
-    "2097152": "Thruster firing"
+    "1048576": "Thruster firing"
 }
 
 
