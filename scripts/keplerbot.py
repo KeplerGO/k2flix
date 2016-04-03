@@ -36,7 +36,7 @@ def generate_tweet(tpf_fn=None, movie_length=120):
     """
     # Open the Target Pixel File
     if tpf_fn is None:  # Get a random url
-        db = KeplerArchiveCrawlerDB('c4-fits-urls.txt')
+        db = KeplerArchiveCrawlerDB('keplerbot-fits-urls.txt')
         tpf_fn = db.random_url()
     log.info('Opening {0}'.format(tpf_fn))
     tpf = TargetPixelFile(tpf_fn, cache=False)
