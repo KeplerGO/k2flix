@@ -262,7 +262,7 @@ class TargetPixelFile(object):
                                      self.flux(frameno, raw=raw)
                                      for frameno
                                      in np.linspace(sample_start, sample_stop,
-                                                    n_samples, dtype=int)
+                                                    n_samples).astype(int)
                                      ]
                                     )
         # If we hit a bad frame, then try to find a random set of good frames
@@ -421,7 +421,8 @@ class TargetPixelFile(object):
         return idx[0], idx[-1]
 
     def save_movie(self, output_fn=None, start=None, stop=None, step=None,
-                   fps=15., dpi=None, min_percent=1., max_percent=95.,
+                   fps=15., dpi=None,
+                   min_cut=None, max_cut=None, min_percent=1., max_percent=95.,
                    cmap='gray', time_format='ut', show_flags=False, raw=False,
                    ignore_bad_frames=True,):
         """Save an animation.
@@ -454,6 +455,12 @@ class TargetPixelFile(object):
             Resolution of the output in dots per Kepler pixel.
             The default is to produce output which is 440px wide.
 
+        min_cut : float, optional
+            Minimum cut level.  The default is None (i.e. use min_percent).
+
+        max_cut : float, optional
+            Minimum cut level.  The default is None (i.e. use max_percent).
+
         min_percent : float, optional
             The percentile value used to determine the pixel value of
             minimum cut level.  The default is 1.0.
@@ -480,9 +487,14 @@ class TargetPixelFile(object):
         if output_fn is None:
             output_fn = self.filename.split('/')[-1] + '.gif'
         # Determine cut levels for contrast stretching from a sample of pixels
-        vmin, vmax = self.cut_levels(min_percent=min_percent,
-                                     max_percent=max_percent,
-                                     raw=raw)
+        if min_cut is None or max_cut is None:
+            vmin, vmax = self.cut_levels(min_percent=min_percent,
+                                         max_percent=max_percent,
+                                         raw=raw)
+        if min_cut is not None:
+            vmin = min_cut
+        if max_cut is not None:
+            vmax = max_cut
         # Determine the first/last frame number and the step size
         frameno_start, frameno_stop = self._frameno_range(start, stop, time_format)
         if step is None:
@@ -533,6 +545,10 @@ def k2flix_main(args=None):
                         help='frames per second (default: 15)')
     parser.add_argument('--dpi', type=float, default=None,
                         help='resolution of the output in dots per K2 pixel (default: choose a dpi that produces a 440px-wide image)')
+    parser.add_argument('--min_cut', type=float, default=None,
+                        help='minimum cut level (default: use min_percent)')
+    parser.add_argument('--max_cut', type=float, default=None,
+                        help='maximum cut level (default: use max_percent)')
     parser.add_argument('--min_percent', metavar='%', type=float, default=1.,
                         help='minimum cut percentile (default: 1.0)')
     parser.add_argument('--max_percent', metavar='%', type=float, default=95.,
@@ -585,6 +601,8 @@ def k2flix_main(args=None):
                            step=args.step,
                            fps=args.fps,
                            dpi=args.dpi,
+                           min_cut=args.min_cut,
+                           max_cut=args.max_cut,
                            min_percent=args.min_percent,
                            max_percent=args.max_percent,
                            cmap=args.cmap,
