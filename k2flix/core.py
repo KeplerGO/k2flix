@@ -560,7 +560,7 @@ def k2flix_main(args=None):
                         help="show the uncalibrated pixel data ('RAW_CNTS')")
     parser.add_argument('--flags', action='store_true',
                         help='show the quality flags')
-    parser.add_argument('filename', nargs='+',
+    parser.add_argument('tpf_filename', nargs='+',
                         help='path to one or more Kepler '
                              'Target Pixel Files (TPF)')
 
@@ -592,7 +592,7 @@ def k2flix_main(args=None):
     else:
         time_format = 'frameno'
 
-    for fn in args.filename:
+    for fn in args.tpf_filename:
         try:
             tpf = TargetPixelFile(fn)
             tpf.save_movie(output_fn=args.output,

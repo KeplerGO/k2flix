@@ -88,17 +88,18 @@ To see all the options, use the `--help` argument to see the full usage informat
     
     $ k2flix --help
     usage: k2flix [-h] [--output FILENAME] [--start START] [--stop STOP]
-                  [--step STEP] [--fps FPS] [--dpi DPI] [--min_percent %]
-                  [--max_percent %] [--cmap CMAP] [--raw] [--flags]
+                  [--step STEP] [--fps FPS] [--dpi DPI] [--min_cut MIN_CUT]
+                  [--max_cut MAX_CUT] [--min_percent %] [--max_percent %]
+                  [--cmap CMAP] [--raw] [--flags]
                   [--ut | --jd | --mjd | --bkjd | --cadence]
-                  filename [filename ...]
-    
+                  tpf_filename [tpf_filename ...]
+
     Converts a Target Pixel File (TPF) from NASA's Kepler/K2 spacecraft into an
     animated gif (default) or MPEG-4 movie.
-    
+
     positional arguments:
-      filename           path to one or more Kepler Target Pixel Files (TPF)
-    
+      tpf_filename       path to one or more Kepler Target Pixel Files (TPF)
+
     optional arguments:
       -h, --help         show this help message and exit
       --output FILENAME  .gif or .mp4 output filename (default: gif with the same
@@ -113,6 +114,8 @@ To see all the options, use the `--help` argument to see the full usage informat
       --fps FPS          frames per second (default: 15)
       --dpi DPI          resolution of the output in dots per K2 pixel (default:
                          choose a dpi that produces a 440px-wide image)
+      --min_cut MIN_CUT  minimum cut level (default: use min_percent)
+      --max_cut MAX_CUT  maximum cut level (default: use max_percent)
       --min_percent %    minimum cut percentile (default: 1.0)
       --max_percent %    maximum cut percentile (default: 95)
       --cmap CMAP        matplotlib color map name (default: gray)
