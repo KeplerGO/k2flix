@@ -192,7 +192,10 @@ class TargetPixelFile(object):
         if time_format == 'frameno':
             return 'Frame {}'.format(frameno)
         elif time_format == 'ut':
-            return Time(self.jd(frameno), format='jd').iso[0:19]
+            try:
+                return Time(self.jd(frameno), format='jd').iso[0:19]
+            except ValueError:
+                return np.nan
         elif time_format == 'jd':
             return 'JD {:.2f}'.format(self.jd(frameno))
         elif time_format == 'mjd':
@@ -277,7 +280,7 @@ class TargetPixelFile(object):
                                      for frameno
                                      in np.random.randint(sample_start,
                                                           sample_stop,
-                                                           n_samples)
+                                                          n_samples)
                                      ]
                                     )
                     break  # Leave loop on success
