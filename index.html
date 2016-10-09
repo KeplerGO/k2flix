@@ -1,73 +1,81 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en-us">
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="K2flix : Kepler pixel data visualizer">
-
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>K2flix</title>
+    <meta charset="UTF-8">
+    <title>K2flix by barentsen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
-
   <body>
+    <section class="page-header">
+      <h1 class="project-name">K2flix</h1>
+      <h2 class="project-tagline">Kepler/K2/TESS pixel data visualizer</h2>
+      <a href="https://github.com/barentsen/k2flix" class="btn">View on GitHub</a>
+      <a href="https://github.com/barentsen/k2flix/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/barentsen/k2flix/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/barentsen/k2flix">View on GitHub</a>
+    <section class="main-content">
+      <h1>
+<a id="k2flix-keplerk2tess-pixel-data-visualizer" class="anchor" href="#k2flix-keplerk2tess-pixel-data-visualizer" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>K2flix: Kepler/K2/TESS pixel data visualizer</h1>
 
-          <h1 id="project_title">K2flix</h1>
-          <h2 id="project_tagline">Kepler pixel data visualizer</h2>
+<p><strong>Create beautiful quicklook movies from the pixel data observed by
+NASA's Kepler and TESS spacecraft.</strong></p>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/barentsen/k2flix/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/barentsen/k2flix/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
+<p><a href="https://pypi.python.org/pypi/k2flix/"><img src="http://img.shields.io/pypi/v/k2flix.svg" alt="PyPI"></a></p>
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h1>
-<a id="k2flix-kepler-pixel-data-visualizer" class="anchor" href="#k2flix-kepler-pixel-data-visualizer" aria-hidden="true"><span class="octicon octicon-link"></span></a>K2flix: Kepler pixel data visualizer</h1>
+<p><a href="https://pypi.python.org/pypi/k2flix/"><img src="http://img.shields.io/pypi/dm/k2flix.svg" alt="PyPI Downloads"></a></p>
 
-<p><strong><em>Create beautiful quicklook movies from the pixel data observed by NASA's Kepler spacecraft.</em></strong></p>
+<p><a href="http://travis-ci.org/barentsen/k2flix"><img src="http://img.shields.io/travis/barentsen/k2flix/master.svg" alt="Travis status"></a></p>
 
-<p><a href="http://dx.doi.org/10.5281/zenodo.15576"><img src="https://zenodo.org/badge/doi/10.5281/zenodo.15576.svg" alt="DOI"></a> <a href="https://pypi.python.org/pypi/k2flix/"><img src="http://img.shields.io/pypi/v/k2flix.svg" alt="PyPI"></a> <a href="https://pypi.python.org/pypi/k2flix/"><img src="http://img.shields.io/pypi/dm/k2flix.svg" alt="PyPI"></a> <a href="http://travis-ci.org/barentsen/k2flix"><img src="http://img.shields.io/travis/barentsen/k2flix/master.svg" alt="Travis status"></a> <a href="https://github.com/barentsen/k2flix/blob/master/LICENSE"><img src="http://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a> </p>
+<p><a href="https://github.com/barentsen/k2flix/blob/master/LICENSE"><img src="http://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a></p>
 
-<p>K2flix makes it easy to inspect the CCD pixel data
-obtained by <a href="http://kepler.nasa.gov">NASA's Kepler space telescope</a>.
-The need for this tool arises from the fact that the two-wheeled extended Kepler mission, K2,
-is affected by new sources of noise -- including pointing jitter and foreground asteroids --
-which are more easy to spot by eye than by algorithm.
-The code takes Kepler's <em>Target Pixel Files (TPF)</em> as input
-and turns them into contrast-stretched animated gifs or MPEG-4 movies.
-These <em>TPF files</em> are publically available from the 
-<a href="https://archive.stsci.edu/missions/kepler/target_pixel_files/">Kepler archive</a>
-and the <a href="https://archive.stsci.edu/missions/k2/target_pixel_files/">K2 archive</a>. 
-K2flix can be used both as a command-line tool or using its Python API.</p>
+<p><a href="http://dx.doi.org/10.5281/zenodo.15576"><img src="https://zenodo.org/badge/doi/10.5281/zenodo.15576.svg" alt="DOI"></a></p>
 
-<h3>
-<a id="example" class="anchor" href="#example" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example</h3>
+<p><a href="http://adsabs.harvard.edu/abs/2015ascl.soft03001B"><img src="https://img.shields.io/badge/NASA%20ADS-2015ascl.soft03001B-blue.svg" alt="ADS Bibcode"></a></p>
 
-<p>Asteroids commonly pass in front of Kepler/K2 targets. 
-How many can you spot in this example 2-day animation?</p>
+<p>K2flix makes it easy to inspect the CCD pixel data obtained by NASA's
+<a href="http://keplerscience.nasa.gov">Kepler space telescope</a>, or simulated
+data from the future <a href="https://tess.gsfc.nasa.gov">TESS space telescope</a>.</p>
+
+<p>The need for this tool arised from the fact that the two-wheeled
+extended Kepler mission, K2, is affected by new sources of noise --
+including pointing jitter and foreground asteroids --which are more
+easily spotted by eye than by algorithm.</p>
+
+<p>This tool takes Kepler's <em>Target Pixel Files (TPF)</em> as input and turns
+them into contrast-stretched animated gifs or MPEG-4 movies. These <em>TPF
+files</em> are publically available from the <a href="https://archive.stsci.edu/missions/kepler/target_pixel_files/">Kepler
+archive</a>
+and the <a href="https://archive.stsci.edu/missions/k2/target_pixel_files/">K2
+archive</a>.</p>
+
+<p>K2flix can be used both as a command-line tool or using its Python API.</p>
+
+<h2>
+<a id="example" class="anchor" href="#example" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Example</h2>
+
+<p>Asteroids commonly pass in front of Kepler/K2 targets. We can use k2flix
+to create a two-day animation of pixel data to count the number of
+asteroids whizzing past:</p>
 
 <pre><code>$ k2flix --start 545 --stop 680 --step 1 --fps 12 http://archive.stsci.edu\
 /missions/k2/target_pixel_files/c1/201500000/72000/ktwo201572338-c01_lpd-targ.fits.gz
 </code></pre>
 
-<p><img src="https://raw.githubusercontent.com/barentsen/k2flix/master/examples/epic-201572338.gif"></p>
+<p><img src="https://raw.githubusercontent.com/barentsen/k2flix/master/examples/epic-201572338.gif" alt="k2flix output example"></p>
 
-<p>To see many more examples, follow <a href="https://twitter.com/KeplerBot">@KeplerBot</a> on Twitter!</p>
+<p>To see many more examples, follow
+<a href="https://twitter.com/KeplerBot">@KeplerBot</a> on Twitter!</p>
 
-<h3>
-<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h3>
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
 
-<p>If you have a working installation of Python on your system, you can install k2flix using pip:</p>
+<p>If you have a working installation of Python on your system, you can
+install k2flix using pip:</p>
 
 <pre><code>$ pip install k2flix
 </code></pre>
@@ -79,10 +87,14 @@ $ cd k2flix
 $ python setup.py install
 </code></pre>
 
-<p>K2flix has only been tested under Linux at present.  Get in touch if you encounter issues on OS X or Windows.</p>
+<p>K2flix has been tested under Linux. Get in touch if you encounter issues
+on OS X or Windows.</p>
 
-<h3>
-<a id="using-k2flix" class="anchor" href="#using-k2flix" aria-hidden="true"><span class="octicon octicon-link"></span></a>Using k2flix</h3>
+<h2>
+<a id="using-k2flix" class="anchor" href="#using-k2flix" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Using k2flix</h2>
+
+<p>After installation, the k2flix tool will be available on the command
+line. You can then use it as follows.</p>
 
 <p>Converting a Kepler pixel file to an animated gif:</p>
 
@@ -94,48 +106,67 @@ $ python setup.py install
 <pre><code>$ k2flix -o movie.mp4 tpf-file.fits.gz
 </code></pre>
 
-<p>K2flix supports reading from web URLs, so you can generate a movie directly from the data archive:</p>
+<p>K2flix supports reading from web URLs, so you can generate a movie
+directly from the data archive:</p>
 
 <pre><code>$ k2flix https://archive.stsci.edu/missions/k2/target_pixel_files/c1/201400000/00000/ktwo201400022-c01_lpd-targ.fits.gz
 </code></pre>
 
-<p>To see all the options, use the <code>--help</code> argument to see the full usage information:</p>
+<p>To see all the options, use the --help argument to see the full usage
+information:</p>
 
 <pre><code>$ k2flix --help
-usage: k2flix [-h] [-o filename] [--start IDX] [--stop IDX] [--step STEP]
-              [--fps FPS] [--dpi DPI] [--min_percent MIN_PERCENT]
-              [--max_percent MAX_PERCENT] [--cmap colormap_name]
-              filename [filename ...]
+usage: k2flix [-h] [-v] [--output FILENAME] [--start START] [--stop STOP]
+              [--step STEP] [--fps FPS] [--binning BINNING] [--dpi DPI]
+              [--min_cut MIN_CUT] [--max_cut MAX_CUT] [--min_percent %]
+              [--max_percent %] [--cmap CMAP] [--raw] [--flags]
+              [--ut | --jd | --mjd | --bkjd | --cadence]
+              tpf_filename [tpf_filename ...]
 
-Converts a Target Pixel File (TPF) from NASA's Kepler/K2 spacecraft into a
-movie or animated gif.
+Converts a Target Pixel File (TPF) from NASA's Kepler/K2/TESS spacecraft into
+an animated gif or MPEG-4 movie for human inspection.
 
 positional arguments:
-  filename              path to one or more Kepler Target Pixel Files (TPF)
+  tpf_filename       path to one or more Target Pixel Files (TPF)
 
 optional arguments:
-  -h, --help            show this help message and exit
-  -o filename           output filename (default: gif with the same name as
-                        the input file)
-  --start IDX           first frame to show (default: 0)
-  --stop IDX            last frame to show (default: -1)
-  --step STEP           spacing between frames (default: output 100 frames)
-  --fps FPS             frames per second (default: 5)
-  --dpi DPI             resolution of the output in dots per K2 pixel
-  --min_percent MIN_PERCENT
-                        percentile value used to determine the minimum cut
-                        level (default: 1.0)
-  --max_percent MAX_PERCENT
-                        percentile value used to determine the maximum cut
-                        level (default: 95.0)
-  --cmap colormap_name  matplotlib color map name (default: gray)
+  -h, --help         show this help message and exit
+  -v, --verbose
+  --output FILENAME  .gif or .mp4 output filename (default: gif with the same
+                     name as the input file)
+  --start START      first frame to show. Give the frame number (default 0),
+                     or a Julian Day if --jd/--mjd is set, or a cadence number
+                     if --cadence is set.
+  --stop STOP        final frame to show. Give the frame number (default: -1),
+                     or a Julian Day if --jd/--mjd is set, or a cadence number
+                     if --cadence is set.
+  --step STEP        spacing between frames (default: show 100 frames)
+  --fps FPS          frames per second (default: 15)
+  --binning BINNING  number of cadence to co-add per frame (default: 1)
+  --dpi DPI          resolution of the output in dots per K2 pixel (default:
+                     choose a dpi that produces a 440px-wide image)
+  --min_cut MIN_CUT  minimum cut level (default: use min_percent)
+  --max_cut MAX_CUT  maximum cut level (default: use max_percent)
+  --min_percent %    minimum cut percentile (default: 1.0)
+  --max_percent %    maximum cut percentile (default: 95)
+  --cmap CMAP        matplotlib color map name (default: gray)
+  --raw              show the uncalibrated pixel data ('RAW_CNTS')
+  --flags            show the quality flags
+  --ut               use Universal Time
+  --jd               use Julian Day for annotation and --start/--stop
+  --mjd              use Modified Julian Day for annotation and --start/--stop
+  --bkjd             use Kepler Julian Day for annotation and --start/--stop
+  --cadence          use Cadence Number for annotation and --start/--stop
 </code></pre>
 
-<h3>
-<a id="citing" class="anchor" href="#citing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Citing</h3>
+<h2>
+<a id="citing" class="anchor" href="#citing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Citing</h2>
 
-<p>If you use this tool in an academic publication, please include a citation.
-The code has been registered in the Astrophysics Source Code Library <a href="http://ascl.net/code/v/1069">[ascl:1503.001]</a> and the preferred BibTeX entry is:</p>
+<p>This tool was created by Geert Barentsen at NASA's Kepler/K2 Guest
+Observer Office. If this tool aided your research, please include a
+citation. The code has been registered in the Astrophysics Source Code
+Library [<a href="http://ascl.net/code/v/1069">ascl:1503.001</a>] and the
+preferred BibTeX entry is:</p>
 
 <pre><code>@MISC{2015ascl.soft03001B,
   author        = {{Barentsen}, G.},
@@ -152,27 +183,28 @@ The code has been registered in the Astrophysics Source Code Library <a href="ht
 }
 </code></pre>
 
-<h3>
-<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributing</h3>
+<h2>
+<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Contributing</h2>
 
-<p>To report bugs and request features, please use the <a href="https://github.com/barentsen/k2flix/issues">issue tracker</a>. Code contributions are very welcome.</p>
+<p>To report bugs and request features, please use the <a href="https://github.com/barentsen/k2flix/issues">issue
+tracker</a>. Code contributions
+are very welcome.</p>
 
-<h3>
-<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h3>
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
 
-<p>Copyright 2015 Geert Barentsen. K2flix is free software made available under the MIT License. For details see the LICENSE file.</p>
-      </section>
-    </div>
+<p>Copyright 2016 Geert Barentsen. K2flix is free software made available
+under the MIT License. For details see the LICENSE file.</p>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">K2flix maintained by <a href="https://github.com/barentsen">barentsen</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/barentsen/k2flix">K2flix</a> is maintained by <a href="https://github.com/barentsen">barentsen</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
-    </div>
 
-              <script type="text/javascript">
+    </section>
+
+            <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
           </script>
@@ -182,7 +214,6 @@ The code has been registered in the Astrophysics Source Code Library <a href="ht
             pageTracker._trackPageview();
             } catch(err) {}
           </script>
-
 
   </body>
 </html>
