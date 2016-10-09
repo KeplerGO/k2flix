@@ -1,6 +1,6 @@
 K2flix: Kepler/K2/TESS pixel data visualizer 
 ============================================
-**Create beautiful quicklook movies from the pixels observed by NASA's Kepler and TESS spacecraft.**
+**Create quicklook movies from the pixels observed by NASA's Kepler/K2/TESS spacecraft.**
 
 .. image:: http://img.shields.io/pypi/v/k2flix.svg
     :target: https://pypi.python.org/pypi/k2flix/
