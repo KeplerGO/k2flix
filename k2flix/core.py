@@ -302,7 +302,7 @@ class TargetPixelFile(object):
                                        [min_percent, max_percent])
         return vmin, vmax
 
-    def create_figure(self, frameno=0, dpi=None, vmin=1, vmax=5000,
+    def create_figure(self, frameno=0, binning=1, dpi=None, vmin=1, vmax=5000,
                       cmap='gray', raw=False, annotate=True,
                       time_format='ut', show_flags=False):
         """Returns a matplotlib Figure object that visualizes a frame.
@@ -311,6 +311,9 @@ class TargetPixelFile(object):
         ----------
         frameno : int
             Image number in the target pixel file.
+
+        binning : int
+            Number of frames around `frameno` to co-add. (default: 1).
 
         dpi : float, optional [dots per inch]
             Resolution of the output in dots per Kepler CCD pixel.
@@ -345,8 +348,23 @@ class TargetPixelFile(object):
             representing an RBG colour image x px wide and y px high.
         """
         flx = self.flux(frameno, raw=raw)
-        shape = list(flx.shape)
+        framecount = 1
+        # Add additional frames if binning was requested
+        if binning > 1:
+            for frameno_offset in np.arange(-binning/2, binning/2, 1, dtype=int):
+                if frameno_offset == 0:
+                    continue  # We already included the center frame above
+                frameno_to_add = frameno + frameno_offset
+                if frameno_to_add < 0 or frameno_to_add > self.no_frames - 1:
+                    continue  # Avoid going out of bounds
+                flx += self.flux(frameno_to_add, raw=raw)
+                framecount += 1
+            flx = flx / framecount
+            if self.verbose:
+                print('Frame {}: co-adding {} cadences.'.format(frameno, framecount))
+
         # Determine the figsize and dpi
+        shape = list(flx.shape)
         if dpi is None:
             # Twitter timeline requires dimensions between 440x220 and 1024x512
             # so we make 440 the default
@@ -433,7 +451,7 @@ class TargetPixelFile(object):
         return idx[0], idx[-1]
 
     def save_movie(self, output_fn=None, start=None, stop=None, step=None,
-                   fps=15., dpi=None,
+                   binning=1, fps=15., dpi=None,
                    min_cut=None, max_cut=None, min_percent=1., max_percent=95.,
                    cmap='gray', time_format='ut', show_flags=False, raw=False,
                    ignore_bad_frames=True,):
@@ -459,6 +477,9 @@ class TargetPixelFile(object):
             Spacing between frames.  Default is to set the stepsize
             automatically such that the movie contains 100 frames between
             start and stop.
+
+        binning : int
+            Number of frames to co-add per frame.  The default is 1.
 
         fps : float (optional)
             Frames per second.  Default is 15.0.
@@ -518,7 +539,8 @@ class TargetPixelFile(object):
         viz = []
         for frameno in tqdm(np.arange(frameno_start, frameno_stop + 1, step, dtype=int)):
             try:
-                fig = self.create_figure(frameno=frameno, dpi=dpi,
+                fig = self.create_figure(frameno=frameno, binning=binning,
+                                         dpi=dpi,
                                          vmin=vmin, vmax=vmax, cmap=cmap,
                                          raw=raw, time_format=time_format,
                                          show_flags=show_flags)
@@ -557,6 +579,9 @@ def k2flix_main(args=None):
                              '(default: show 100 frames)')
     parser.add_argument('--fps', type=float, default=15.,
                         help='frames per second (default: 15)')
+    parser.add_argument('--binning', type=int, default=1,
+                        help='number of cadence to co-add per frame'
+                             '(default: 1)')
     parser.add_argument('--dpi', type=float, default=None,
                         help='resolution of the output in dots per K2 pixel (default: choose a dpi that produces a 440px-wide image)')
     parser.add_argument('--min_cut', type=float, default=None,
@@ -614,6 +639,7 @@ def k2flix_main(args=None):
                            stop=args.stop,
                            step=args.step,
                            fps=args.fps,
+                           binning=args.binning,
                            dpi=args.dpi,
                            min_cut=args.min_cut,
                            max_cut=args.max_cut,
@@ -624,7 +650,10 @@ def k2flix_main(args=None):
                            show_flags=args.flags,
                            raw=args.raw)
         except Exception as e:
-            print('ERROR: {}'.format(e))
+            if args.verbose:
+                raise e
+            else:
+                print('ERROR: {}'.format(e))
 
 # Example use
 if __name__ == '__main__':
