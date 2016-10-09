@@ -6,10 +6,6 @@ K2flix: Kepler/K2/TESS pixel data visualizer
     :target: https://pypi.python.org/pypi/k2flix/
     :alt: PyPI
 
-.. image:: http://img.shields.io/pypi/dm/k2flix.svg
-    :target: https://pypi.python.org/pypi/k2flix/
-    :alt: PyPI Downloads
-
 .. image:: http://img.shields.io/travis/barentsen/k2flix/master.svg
     :target: http://travis-ci.org/barentsen/k2flix
     :alt: Travis status
