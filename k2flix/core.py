@@ -588,7 +588,7 @@ def k2flix_main(args=None):
     """Script to convert Kepler pixel data (TPF files) to a movie."""
     parser = argparse.ArgumentParser(
         description="Converts a Target Pixel File (TPF) from NASA's "
-                    "Kepler/K2 spacecraft into an animated gif (default) or MPEG-4 movie.")
+                    "Kepler/K2/TESS spacecraft into an animated gif or MPEG-4 movie for human inspection.")
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='')
     parser.add_argument('--output', metavar='FILENAME',
@@ -604,7 +604,7 @@ def k2flix_main(args=None):
     parser.add_argument('--fps', type=float, default=15.,
                         help='frames per second (default: 15)')
     parser.add_argument('--binning', type=int, default=1,
-                        help='number of cadence to co-add per frame'
+                        help='number of cadence to co-add per frame '
                              '(default: 1)')
     parser.add_argument('--dpi', type=float, default=None,
                         help='resolution of the output in dots per K2 pixel (default: choose a dpi that produces a 440px-wide image)')
@@ -624,8 +624,7 @@ def k2flix_main(args=None):
     parser.add_argument('--flags', action='store_true',
                         help='show the quality flags')
     parser.add_argument('tpf_filename', nargs='+',
-                        help='path to one or more Kepler '
-                             'Target Pixel Files (TPF)')
+                        help='path to one or more Target Pixel Files (TPF)')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--ut', action='store_true',
