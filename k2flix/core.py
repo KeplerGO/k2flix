@@ -117,8 +117,11 @@ class TargetPixelFile(object):
         self.verbose = verbose
 
     @property
-    def target(self):
-        return self.hdulist[0].header['OBJECT']
+    def objectname(self):
+        try:
+            return self.hdulist[0].header['OBJECT']
+        except KeyError:
+            return ''
 
     @property
     def ra(self):
@@ -368,7 +371,7 @@ class TargetPixelFile(object):
             fontsize = 3. * shape[0]
             margin = 0.03
             # Print target name in lower left corner
-            txt = ax.text(margin, margin, self.target,
+            txt = ax.text(margin, margin, self.objectname,
                           family="monospace", fontsize=fontsize,
                           color='white', transform=ax.transAxes)
             txt.set_path_effects([path_effects.Stroke(linewidth=fontsize/6.,
