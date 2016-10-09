@@ -106,11 +106,15 @@ class TargetPixelFile(object):
     cache : boolean
         If the file name is a URL, this specifies whether or not to save the
         file locally in Astropy’s download cache. (default: True)
+
+    verbose : boolean
+        If True, print debugging output.
     """
-    def __init__(self, filename, cache=True):
+    def __init__(self, filename, cache=True, verbose=False):
         self.filename = filename
         self.hdulist = fits.open(filename, cache=cache)
         self.no_frames = len(self.hdulist[1].data['FLUX'])
+        self.verbose = verbose
 
     @property
     def target(self):
@@ -353,6 +357,8 @@ class TargetPixelFile(object):
         fig = pl.figure(figsize=shape, dpi=dpi)
         # Display the image using matshow
         ax = fig.add_subplot(1, 1, 1)
+        if self.verbose:
+            print('vmin/vmax = {}/{}'.format(vmin, vmax))
         transform = (visualization.LogStretch() +
                      visualization.ManualInterval(vmin=vmin, vmax=vmax))
         ax.matshow(transform(flx), aspect='auto',
@@ -534,6 +540,8 @@ def k2flix_main(args=None):
     parser = argparse.ArgumentParser(
         description="Converts a Target Pixel File (TPF) from NASA's "
                     "Kepler/K2 spacecraft into an animated gif (default) or MPEG-4 movie.")
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='')
     parser.add_argument('--output', metavar='FILENAME',
                         type=str, default=None,
                         help='.gif or .mp4 output filename (default: gif with the same name as the input file)')
@@ -597,7 +605,7 @@ def k2flix_main(args=None):
 
     for fn in args.tpf_filename:
         try:
-            tpf = TargetPixelFile(fn)
+            tpf = TargetPixelFile(fn, verbose=args.verbose)
             tpf.save_movie(output_fn=args.output,
                            start=args.start,
                            stop=args.stop,
