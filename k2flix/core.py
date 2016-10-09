@@ -251,6 +251,43 @@ class TargetPixelFile(object):
                 raise BadKeplerFrame('frame {0}: bad frame'.format(frameno))
         return flux
 
+    def flux_binned(self, frameno=0, binning=1, raw=False, pedestal=1000):
+        """Returns the raw or calibrated co-added flux centered on a frame.
+
+        Parameters
+        ----------
+        frameno : int
+            Frame number.
+
+        binning : int
+            Number of frames to co-add, centered around `frameno`.
+
+        raw : bool
+            If `True` return the raw counts, if `False` return the calibrated
+            flux. (Default: `False`.)
+
+        pedestal : float
+            Value to add to the pixel counts.  This is useful to help prevent
+            the counts from being negative after background subtraction.
+            (Default: 1000.)
+        """
+        flx = self.flux(frameno, raw=raw)
+        framecount = 1
+        # Add additional frames if binning was requested
+        if binning > 1:
+            for frameno_offset in np.arange(-binning/2, binning/2, 1, dtype=int):
+                if frameno_offset == 0:
+                    continue  # We already included the center frame above
+                frameno_to_add = frameno + frameno_offset
+                if frameno_to_add < 0 or frameno_to_add > self.no_frames - 1:
+                    continue  # Avoid going out of bounds
+                flx += self.flux(frameno_to_add, raw=raw)
+                framecount += 1
+            flx = flx / framecount
+            if self.verbose:
+                print('Frame {}: co-adding {} cadences.'.format(frameno, framecount))
+        return flx
+
     def cut_levels(self, min_percent=1., max_percent=95., raw=False,
                    sample_start=0, sample_stop=-1, n_samples=3):
         """Determine the cut levels for contrast stretching.
@@ -347,21 +384,8 @@ class TargetPixelFile(object):
             An array of unisgned integers of shape (x, y, 3),
             representing an RBG colour image x px wide and y px high.
         """
-        flx = self.flux(frameno, raw=raw)
-        framecount = 1
-        # Add additional frames if binning was requested
-        if binning > 1:
-            for frameno_offset in np.arange(-binning/2, binning/2, 1, dtype=int):
-                if frameno_offset == 0:
-                    continue  # We already included the center frame above
-                frameno_to_add = frameno + frameno_offset
-                if frameno_to_add < 0 or frameno_to_add > self.no_frames - 1:
-                    continue  # Avoid going out of bounds
-                flx += self.flux(frameno_to_add, raw=raw)
-                framecount += 1
-            flx = flx / framecount
-            if self.verbose:
-                print('Frame {}: co-adding {} cadences.'.format(frameno, framecount))
+        # Get the flux data to visualize
+        flx = self.flux_binned(frameno=frameno, binning=binning, raw=raw)
 
         # Determine the figsize and dpi
         shape = list(flx.shape)
