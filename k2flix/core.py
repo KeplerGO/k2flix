@@ -20,6 +20,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as pl
 from matplotlib.image import imsave
 import matplotlib.patheffects as path_effects
+from matplotlib.colors import NoNorm
 
 from astropy.io import fits
 from astropy.time import Time
@@ -223,8 +224,8 @@ class TargetPixelFile(object):
                 flags.append(KEPLER_QUALITY_FLAGS[flag])
         return flags
 
-    def flux(self, frameno=0, raw=False, pedestal=1000.):
-        """Returns the raw or calibrated flux data for a given frame.
+    def flux(self, frameno=0, data_col='FLUX', pedestal=1000.):
+        """Returns the data for a given frame.
 
         Parameters
         ----------
@@ -240,19 +241,15 @@ class TargetPixelFile(object):
             the counts from being negative after background subtraction.
             (Default: 1000.)
         """
-        if raw:
-            flux_column = "RAW_CNTS"
-        else:
-            flux_column = "FLUX"
-        flux = self.hdulist[1].data[flux_column][frameno].copy() + pedestal
+        flux = self.hdulist[1].data[data_col][frameno].copy() + pedestal
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
-            if np.all(np.isnan(flux)):
+            if data_col != 'COSMIC_RAYS' and np.all(np.isnan(flux)):
                 raise BadKeplerFrame('frame {0}: bad frame'.format(frameno))
         return flux
 
-    def flux_binned(self, frameno=0, binning=1, raw=False, pedestal=1000):
-        """Returns the raw or calibrated co-added flux centered on a frame.
+    def flux_binned(self, frameno=0, binning=1, data_col='FLUX', pedestal=1000):
+        """Returns the co-added data centered on a frame.
 
         Parameters
         ----------
@@ -271,7 +268,7 @@ class TargetPixelFile(object):
             the counts from being negative after background subtraction.
             (Default: 1000.)
         """
-        flx = self.flux(frameno, raw=raw)
+        flx = self.flux(frameno, data_col=data_col)
         framecount = 1
         # Add additional frames if binning was requested
         if binning > 1:
@@ -281,14 +278,14 @@ class TargetPixelFile(object):
                 frameno_to_add = frameno + frameno_offset
                 if frameno_to_add < 0 or frameno_to_add > self.no_frames - 1:
                     continue  # Avoid going out of bounds
-                flx += self.flux(frameno_to_add, raw=raw)
+                flx += self.flux(frameno_to_add, data_col=data_col)
                 framecount += 1
             flx = flx / framecount
             if self.verbose:
                 print('Frame {}: co-adding {} cadences.'.format(frameno, framecount))
         return flx
 
-    def cut_levels(self, min_percent=1., max_percent=95., raw=False,
+    def cut_levels(self, min_percent=1., max_percent=95., data_col='FLUX',
                    sample_start=0, sample_stop=-1, n_samples=3):
         """Determine the cut levels for contrast stretching.
 
@@ -306,7 +303,7 @@ class TargetPixelFile(object):
         try:
             sample = np.concatenate(
                                     [
-                                     self.flux(frameno, raw=raw)
+                                     self.flux(frameno, data_col=data_col)
                                      for frameno
                                      in np.linspace(sample_start, sample_stop,
                                                     n_samples).astype(int)
@@ -320,7 +317,7 @@ class TargetPixelFile(object):
                 try:
                     sample = np.concatenate(
                                     [
-                                     self.flux(frameno, raw=raw)
+                                     self.flux(frameno, data_col=data_col)
                                      for frameno
                                      in np.random.randint(sample_start,
                                                           sample_stop,
@@ -339,8 +336,9 @@ class TargetPixelFile(object):
                                        [min_percent, max_percent])
         return vmin, vmax
 
-    def create_figure(self, frameno=0, binning=1, dpi=None, vmin=1, vmax=5000,
-                      cmap='gray', raw=False, annotate=True,
+    def create_figure(self, frameno=0, binning=1, dpi=None,
+                      stretch='log', vmin=1, vmax=5000,
+                      cmap='gray', data_col='FLUX', annotate=True,
                       time_format='ut', show_flags=False):
         """Returns a matplotlib Figure object that visualizes a frame.
 
@@ -385,7 +383,7 @@ class TargetPixelFile(object):
             representing an RBG colour image x px wide and y px high.
         """
         # Get the flux data to visualize
-        flx = self.flux_binned(frameno=frameno, binning=binning, raw=raw)
+        flx = self.flux_binned(frameno=frameno, binning=binning, data_col=data_col)
 
         # Determine the figsize and dpi
         shape = list(flx.shape)
@@ -393,9 +391,7 @@ class TargetPixelFile(object):
             # Twitter timeline requires dimensions between 440x220 and 1024x512
             # so we make 440 the default
             dpi = 440 / float(shape[0])
-        with warnings.catch_warnings():
-            warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
-            flx[np.isnan(flx) | (flx < vmin)] = vmin
+
         # libx264 require the height to be divisible by 2, we ensure this here:
         shape[1] -= ((shape[1] * dpi) % 2) / dpi
         # Create the figureand display the flux image using matshow
@@ -403,12 +399,26 @@ class TargetPixelFile(object):
         # Display the image using matshow
         ax = fig.add_subplot(1, 1, 1)
         if self.verbose:
-            print('vmin/vmax = {}/{}'.format(vmin, vmax))
-        transform = (visualization.LogStretch() +
+            print('{} vmin/vmax = {}/{} (median={})'.format(data_col, vmin, vmax, np.nanmedian(flx)))
+
+        if stretch == 'linear':
+            stretch_fn = visualization.LinearStretch()
+        elif stretch == 'sqrt':
+            stretch_fn = visualization.SqrtStretch()
+        elif stretch == 'power':
+            stretch_fn = visualization.PowerStretch(1.0)
+        elif stretch == 'log':
+            stretch_fn = visualization.LogStretch()
+        elif stretch == 'asinh':
+            stretch_fn = visualization.AsinhStretch(0.1)
+        else:
+            raise ValueError('Unknown stretch: {0}.'.format(stretch))
+
+        transform = (stretch_fn +
                      visualization.ManualInterval(vmin=vmin, vmax=vmax))
-        ax.matshow(transform(flx), aspect='auto',
-                   cmap=cmap, origin='lower',
-                   interpolation='nearest')
+        ax.imshow((255*transform(flx)).astype(int), aspect='auto',
+                   origin='lower', interpolation='nearest',
+                   cmap=cmap, norm=NoNorm())
         if annotate:  # Annotate the frame with a timestamp and target name?
             fontsize = 3. * shape[0]
             margin = 0.03
@@ -475,9 +485,9 @@ class TargetPixelFile(object):
         return idx[0], idx[-1]
 
     def save_movie(self, output_fn=None, start=None, stop=None, step=None,
-                   binning=1, fps=15., dpi=None,
+                   binning=1, fps=15., dpi=None, stretch='log',
                    min_cut=None, max_cut=None, min_percent=1., max_percent=95.,
-                   cmap='gray', time_format='ut', show_flags=False, raw=False,
+                   cmap='gray', time_format='ut', show_flags=False, data_col='FLUX',
                    ignore_bad_frames=True,):
         """Save an animation.
 
@@ -547,7 +557,7 @@ class TargetPixelFile(object):
         if min_cut is None or max_cut is None:
             vmin, vmax = self.cut_levels(min_percent=min_percent,
                                          max_percent=max_percent,
-                                         raw=raw)
+                                         data_col=data_col)
         if min_cut is not None:
             vmin = min_cut
         if max_cut is not None:
@@ -564,9 +574,9 @@ class TargetPixelFile(object):
         for frameno in tqdm(np.arange(frameno_start, frameno_stop + 1, step, dtype=int)):
             try:
                 fig = self.create_figure(frameno=frameno, binning=binning,
-                                         dpi=dpi,
+                                         dpi=dpi, stretch=stretch,
                                          vmin=vmin, vmax=vmax, cmap=cmap,
-                                         raw=raw, time_format=time_format,
+                                         data_col=data_col, time_format=time_format,
                                          show_flags=show_flags)
                 img = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
                 img = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
@@ -607,7 +617,11 @@ def k2flix_main(args=None):
                         help='number of cadence to co-add per frame '
                              '(default: 1)')
     parser.add_argument('--dpi', type=float, default=None,
-                        help='resolution of the output in dots per K2 pixel (default: choose a dpi that produces a 440px-wide image)')
+                        help='resolution of the output in dots per K2 pixel '
+                             '(default: choose a dpi that produces a 440px-wide image)')
+    parser.add_argument('--stretch', type=str, default='log',
+                        help='type of contrast stretching: "linear", "sqrt", '
+                             '"power", "log", or "asinh" (default is "log")')
     parser.add_argument('--min_cut', type=float, default=None,
                         help='minimum cut level (default: use min_percent)')
     parser.add_argument('--max_cut', type=float, default=None,
@@ -619,12 +633,18 @@ def k2flix_main(args=None):
     parser.add_argument('--cmap', type=str,
                         default='gray', help='matplotlib color map name '
                                              '(default: gray)')
-    parser.add_argument('--raw', action='store_true',
-                        help="show the uncalibrated pixel data ('RAW_CNTS')")
     parser.add_argument('--flags', action='store_true',
                         help='show the quality flags')
     parser.add_argument('tpf_filename', nargs='+',
                         help='path to one or more Target Pixel Files (TPF)')
+
+    datagroup = parser.add_mutually_exclusive_group()
+    datagroup.add_argument('--raw', action='store_true',
+                           help="show the uncalibrated pixel counts ('RAW_CNTS')")
+    datagroup.add_argument('--background', action='store_true',
+                           help="show the background flux ('FLUX_BKG')")
+    datagroup.add_argument('--cosmic', action='store_true',
+                           help="show the cosmic rays ('COSMIC_RAYS')")
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--ut', action='store_true',
@@ -639,6 +659,16 @@ def k2flix_main(args=None):
                        help='use Cadence Number  for annotation and --start/--stop')
 
     args = parser.parse_args(args)
+
+    # What is the data column to show?
+    if args.raw:
+        data_col = 'RAW_CNTS'
+    elif args.background:
+        data_col = 'FLUX_BKG'
+    elif args.cosmic:
+        data_col = 'COSMIC_RAYS'
+    else:
+        data_col = 'FLUX'
 
     # What is the time format to use?
     if args.ut:
@@ -664,6 +694,7 @@ def k2flix_main(args=None):
                            fps=args.fps,
                            binning=args.binning,
                            dpi=args.dpi,
+                           stretch=args.stretch,
                            min_cut=args.min_cut,
                            max_cut=args.max_cut,
                            min_percent=args.min_percent,
@@ -671,7 +702,7 @@ def k2flix_main(args=None):
                            cmap=args.cmap,
                            time_format=time_format,
                            show_flags=args.flags,
-                           raw=args.raw)
+                           data_col=data_col)
         except Exception as e:
             if args.verbose:
                 raise e
