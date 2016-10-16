@@ -87,8 +87,9 @@ To see all the options, use the `--help` argument to see the full usage informat
     $ k2flix --help
     usage: k2flix [-h] [-v] [--output FILENAME] [--start START] [--stop STOP]
                   [--step STEP] [--fps FPS] [--binning BINNING] [--dpi DPI]
-                  [--min_cut MIN_CUT] [--max_cut MAX_CUT] [--min_percent %]
-                  [--max_percent %] [--cmap CMAP] [--raw] [--flags]
+                  [--stretch STRETCH] [--min_cut MIN_CUT] [--max_cut MAX_CUT]
+                  [--min_percent %] [--max_percent %] [--cmap CMAP] [--flags]
+                  [--raw | --background | --cosmic]
                   [--ut | --jd | --mjd | --bkjd | --cadence]
                   tpf_filename [tpf_filename ...]
 
@@ -114,13 +115,17 @@ To see all the options, use the `--help` argument to see the full usage informat
       --binning BINNING  number of cadence to co-add per frame (default: 1)
       --dpi DPI          resolution of the output in dots per K2 pixel (default:
                          choose a dpi that produces a 440px-wide image)
+      --stretch STRETCH  type of contrast stretching: "linear", "sqrt", "power",
+                         "log", or "asinh" (default is "log")
       --min_cut MIN_CUT  minimum cut level (default: use min_percent)
       --max_cut MAX_CUT  maximum cut level (default: use max_percent)
       --min_percent %    minimum cut percentile (default: 1.0)
       --max_percent %    maximum cut percentile (default: 95)
       --cmap CMAP        matplotlib color map name (default: gray)
-      --raw              show the uncalibrated pixel data ('RAW_CNTS')
       --flags            show the quality flags
+      --raw              show the uncalibrated pixel counts ('RAW_CNTS')
+      --background       show the background flux ('FLUX_BKG')
+      --cosmic           show the cosmic rays ('COSMIC_RAYS')
       --ut               use Universal Time
       --jd               use Julian Day for annotation and --start/--stop
       --mjd              use Modified Julian Day for annotation and --start/--stop
