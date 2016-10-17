@@ -224,7 +224,7 @@ class TargetPixelFile(object):
                 flags.append(KEPLER_QUALITY_FLAGS[flag])
         return flags
 
-    def flux(self, frameno=0, data_col='FLUX', pedestal=1000.):
+    def flux(self, frameno=0, data_col='FLUX', pedestal=1e6):
         """Returns the data for a given frame.
 
         Parameters
@@ -241,14 +241,24 @@ class TargetPixelFile(object):
             the counts from being negative after background subtraction.
             (Default: 1000.)
         """
-        flux = self.hdulist[1].data[data_col][frameno].copy() + pedestal
+        if data_col == 'RESIDUAL':
+            calibrated_flux = self.hdulist[1].data['FLUX'][frameno]
+            # Convert raw counts to electrons per second
+            time = self.hdulist[1].header['INT_TIME'] * self.hdulist[1].header['NUM_FRM']
+            raw_electrons = self.hdulist[1].data['RAW_CNTS'][frameno] * self.hdulist[1].header['GAIN'] / time
+            # Perform a simple background correction
+            raw_flux = raw_electrons - np.nanmean(raw_electrons - calibrated_flux)
+            flux = calibrated_flux - raw_flux + pedestal
+        else:
+            flux = self.hdulist[1].data[data_col][frameno].copy() + pedestal
+
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
             if data_col != 'COSMIC_RAYS' and np.all(np.isnan(flux)):
                 raise BadKeplerFrame('frame {0}: bad frame'.format(frameno))
         return flux
 
-    def flux_binned(self, frameno=0, binning=1, data_col='FLUX', pedestal=1000):
+    def flux_binned(self, frameno=0, binning=1, data_col='FLUX', pedestal=1e6):
         """Returns the co-added data centered on a frame.
 
         Parameters
@@ -645,6 +655,8 @@ def k2flix_main(args=None):
                            help="show the background flux ('FLUX_BKG')")
     datagroup.add_argument('--cosmic', action='store_true',
                            help="show the cosmic rays ('COSMIC_RAYS')")
+    datagroup.add_argument('--residual', action='store_true',
+                           help="show the calibration residuals (calibrated flux - raw flux)")
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--ut', action='store_true',
@@ -667,6 +679,8 @@ def k2flix_main(args=None):
         data_col = 'FLUX_BKG'
     elif args.cosmic:
         data_col = 'COSMIC_RAYS'
+    elif args.residual:
+        data_col = 'RESIDUAL'
     else:
         data_col = 'FLUX'
 
