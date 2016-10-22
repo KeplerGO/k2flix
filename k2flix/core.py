@@ -605,9 +605,9 @@ def k2flix_main(args=None):
                         type=str, default=None,
                         help='.gif or .mp4 output filename (default: gif with the same name as the input file)')
     parser.add_argument('--start', type=float, default=None,
-                        help='first frame to show. Give the frame number (default 0), or a Julian Day if --jd/--mjd is set, or a cadence number if --cadence is set.')
+                        help='first frame to show. Give the frame number (default 0), or a Julian Day if --jd/--mjd/--bkjd is set, or a cadence number if --cadence is set.')
     parser.add_argument('--stop', type=float, default=None,
-                        help='final frame to show. Give the frame number (default: -1), or a Julian Day if --jd/--mjd is set, or a cadence number if --cadence is set.')
+                        help='final frame to show. Give the frame number (default: -1), or a Julian Day if --jd/--mjd/--bkjd is set, or a cadence number if --cadence is set.')
     parser.add_argument('--step', type=int, default=None,
                         help='spacing between frames '
                              '(default: show 100 frames)')
@@ -648,7 +648,7 @@ def k2flix_main(args=None):
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--ut', action='store_true',
-                       help='use Universal Time')
+                       help='use Universal Time for annotation (default)')
     group.add_argument('--jd', action='store_true',
                        help='use Julian Day for annotation and --start/--stop')
     group.add_argument('--mjd', action='store_true',

@@ -23,25 +23,26 @@ K2flix: Kepler/K2/TESS pixel data visualizer
     :alt: ADS Bibcode
 
 K2flix makes it easy to inspect the CCD pixel data
-obtained by NASA's `Kepler space telescope <http://keplerscience.nasa.gov>`_,
-or simulated data from the future `TESS space telescope <https://tess.gsfc.nasa.gov>`_.
+obtained by NASA's `Kepler <http://keplerscience.nasa.gov>`_
+and `TESS <https://tess.gsfc.nasa.gov>`_ space telescopes.
 
-The need for this tool arised from the fact that the two-wheeled extended Kepler mission, K2,
-is affected by new sources of noise -- including pointing jitter and foreground asteroids --
-which are more easily spotted by eye than by algorithm.
+The need for this tool arises from the fact that all telescope data is
+affected by sources of noise such as pointing jitter and foreground asteroids,
+which are often more easily spotted by eye than by algorithm.
 
-This tool takes Kepler's *Target Pixel Files (TPF)* as input
+This tool takes Kepler's or TESS's *Target Pixel Files (TPF)* as input
 and turns them into contrast-stretched animated gifs or MPEG-4 movies.
 These *TPF files* are publically available from the 
-`Kepler archive <https://archive.stsci.edu/missions/kepler/target_pixel_files/>`_
-and the `K2 archive <https://archive.stsci.edu/missions/k2/target_pixel_files/>`_. 
+`Kepler archive <https://archive.stsci.edu/missions/kepler/target_pixel_files/>`_,
+the `K2 archive <https://archive.stsci.edu/missions/k2/target_pixel_files/>`_,
+or TESS simulations. 
 
 K2flix can be used both as a command-line tool or using its Python API.
 
 Example
 -------
 Asteroids commonly pass in front of Kepler/K2 targets. 
-We can use k2flix to create a two-day animation of pixel data to count the number of asteroids whizzing past::
+We can use k2flix to create a two-day animation of pixel data to view the asteroids whizzing past::
 
     $ k2flix --start 545 --stop 680 --step 1 --fps 12 http://archive.stsci.edu\
     /missions/k2/target_pixel_files/c1/201500000/72000/ktwo201572338-c01_lpd-targ.fits.gz
@@ -63,17 +64,15 @@ Alternatively, you can get the latest version by installing from source::
   $ cd k2flix
   $ python setup.py install
 
-K2flix has been tested under Linux.  Get in touch if you encounter issues on OS X or Windows.
-
 Using k2flix
 ------------
 After installation, the `k2flix` tool will be available on the command line. You can then use it as follows.
 
-Converting a Kepler pixel file to an animated gif::
+To convert a Kepler pixel file to an animated gif::
 
   $ k2flix tpf-file.fits.gz
 
-Converting a Kepler pixel file to an MPEG-4 movie::
+To convert a Kepler pixel file to an MPEG-4 movie::
 
   $ k2flix -o movie.mp4 tpf-file.fits.gz
 
@@ -105,11 +104,11 @@ To see all the options, use the `--help` argument to see the full usage informat
       --output FILENAME  .gif or .mp4 output filename (default: gif with the same
                          name as the input file)
       --start START      first frame to show. Give the frame number (default 0),
-                         or a Julian Day if --jd/--mjd is set, or a cadence number
-                         if --cadence is set.
+                         or a Julian Day if --jd/--mjd/--bkjd is set, or a cadence
+                         number if --cadence is set.
       --stop STOP        final frame to show. Give the frame number (default: -1),
-                         or a Julian Day if --jd/--mjd is set, or a cadence number
-                         if --cadence is set.
+                         or a Julian Day if --jd/--mjd/--bkjd is set, or a cadence
+                         number if --cadence is set.
       --step STEP        spacing between frames (default: show 100 frames)
       --fps FPS          frames per second (default: 15)
       --binning BINNING  number of cadence to co-add per frame (default: 1)
@@ -126,7 +125,7 @@ To see all the options, use the `--help` argument to see the full usage informat
       --raw              show the uncalibrated pixel counts ('RAW_CNTS')
       --background       show the background flux ('FLUX_BKG')
       --cosmic           show the cosmic rays ('COSMIC_RAYS')
-      --ut               use Universal Time
+      --ut               use Universal Time for annotation (default)
       --jd               use Julian Day for annotation and --start/--stop
       --mjd              use Modified Julian Day for annotation and --start/--stop
       --bkjd             use Kepler Julian Day for annotation and --start/--stop
@@ -154,7 +153,8 @@ The code has been registered in the Astrophysics Source Code Library [`ascl:1503
 
 Contributing
 ------------
-To report bugs and request features, please use the `issue tracker <https://github.com/barentsen/k2flix/issues>`_. Code contributions are very welcome.
+To report bugs and request features, please use the `issue tracker <https://github.com/barentsen/k2flix/issues>`_. 
+Code contributions are very welcome.
 
 License
 -------
