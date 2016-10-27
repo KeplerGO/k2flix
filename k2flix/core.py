@@ -313,7 +313,7 @@ class TargetPixelFile(object):
         except BadKeplerFrame:
             success = False
             # Try 20 times
-            for idx in range(20):
+            for _ in range(20):
                 try:
                     sample = np.concatenate(
                                     [
@@ -324,6 +324,7 @@ class TargetPixelFile(object):
                                                           n_samples)
                                      ]
                                     )
+                    success = True
                     break  # Leave loop on success
                 except BadKeplerFrame:
                     pass  # Try again
