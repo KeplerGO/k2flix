@@ -241,6 +241,9 @@ class TargetPixelFile(object):
             the counts from being negative after background subtraction.
             (Default: 1000.)
         """
+        # Quick hack for TESS simulated data:
+        if (data_col == 'COSMIC_RAYS') and (data_col not in self.hdulist[1].data.columns.names) and ('COSMICS' in self.hdulist[1].data.columns.names):
+            data_col = 'COSMICS'
         flux = self.hdulist[1].data[data_col][frameno].copy() + pedestal
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
@@ -286,7 +289,7 @@ class TargetPixelFile(object):
         return flx
 
     def cut_levels(self, min_percent=1., max_percent=95., data_col='FLUX',
-                   sample_start=0, sample_stop=-1, n_samples=3):
+                   sample_start=None, sample_stop=None, n_samples=3):
         """Determine the cut levels for contrast stretching.
 
         For speed, the levels are determined using only `n_samples` number
@@ -297,6 +300,10 @@ class TargetPixelFile(object):
         vmin, vmax : float, float
             Min and max cut levels.
         """
+        if sample_start is None:
+            sample_start = 0
+        if sample_stop is None:
+            sample_stop = -1
         if sample_stop < 0:
             sample_stop = self.no_frames + sample_stop
         # Build a sample of pixels
@@ -558,6 +565,8 @@ class TargetPixelFile(object):
         if min_cut is None or max_cut is None:
             vmin, vmax = self.cut_levels(min_percent=min_percent,
                                          max_percent=max_percent,
+                                         sample_start=start,
+                                         sample_stop=stop,
                                          data_col=data_col)
         if min_cut is not None:
             vmin = min_cut
