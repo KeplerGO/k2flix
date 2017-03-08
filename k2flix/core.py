@@ -271,7 +271,7 @@ class TargetPixelFile(object):
             the counts from being negative after background subtraction.
             (Default: 1000.)
         """
-        flx = self.flux(frameno, data_col=data_col)
+        flx = self.flux(frameno, data_col=data_col, pedestal=pedestal)
         framecount = 1
         # Add additional frames if binning was requested
         if binning > 1:
@@ -281,7 +281,7 @@ class TargetPixelFile(object):
                 frameno_to_add = frameno + frameno_offset
                 if frameno_to_add < 0 or frameno_to_add > self.no_frames - 1:
                     continue  # Avoid going out of bounds
-                flx += self.flux(frameno_to_add, data_col=data_col)
+                flx += self.flux(frameno_to_add, data_col=data_col, pedestal=pedestal)
                 framecount += 1
             flx = flx / framecount
             if self.verbose:
