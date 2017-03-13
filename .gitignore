@@ -53,6 +53,9 @@ docs/_build/
 # PyBuilder
 target/
 
+# Editors
+*.swp
+
 # Custom additions
 sandbox
 *urls.txt
@@ -60,3 +63,5 @@ secrets.py
 TODO
 README.md
 
+# Mac OSX
+.DS_Store
