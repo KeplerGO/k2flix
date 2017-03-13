@@ -326,9 +326,9 @@ class TargetPixelFile(object):
                                     [
                                      self.flux(frameno, data_col=data_col)
                                      for frameno
-                                     in np.random.randint(sample_start,
-                                                          sample_stop,
-                                                          n_samples)
+                                     in np.random.choice(np.arange(sample_start,
+                                                                   sample_stop+1),
+                                                         size=n_samples, replace=False)
                                      ]
                                     )
                     success = True
