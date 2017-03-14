@@ -1,5 +1,6 @@
 """Tests the basic functionality."""
 import os
+import imageio
 from k2flix import TargetPixelFile
 
 
@@ -27,6 +28,7 @@ class TestCore():
         assert moviepath.check()
 
     def test_save_mp4(self, tmpdir):
+        imageio.plugins.ffmpeg.download()
         moviepath = tmpdir.join('test.mp4')
         self.tpf.save_movie(output_fn=str(moviepath),
                             start=10, stop=20, step=1)
