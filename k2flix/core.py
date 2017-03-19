@@ -18,7 +18,6 @@ import warnings
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as pl
-from matplotlib.image import imsave
 import matplotlib.patheffects as path_effects
 from matplotlib.colors import NoNorm
 
@@ -363,7 +362,7 @@ class TargetPixelFile(object):
             By default the dpi is chosen such that the image is 440px wide.
 
         vmin : float, optional
-            Minimum cut level (default: 0).
+            Minimum cut level (default: 1).
 
         vmax : float, optional
             Maximum cut level (default: 5000).
