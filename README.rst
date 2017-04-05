@@ -74,7 +74,7 @@ To convert a Kepler pixel file to an animated gif::
 
 To convert a Kepler pixel file to an MPEG-4 movie::
 
-  $ k2flix -o movie.mp4 tpf-file.fits.gz
+  $ k2flix --o movie.mp4 tpf-file.fits.gz
 
 K2flix supports reading from web URLs, so you can generate a movie directly from the data archive::
   
