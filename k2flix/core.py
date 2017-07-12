@@ -560,23 +560,23 @@ class TargetPixelFile(object):
         """
         if output_fn is None:
             output_fn = self.filename.split('/')[-1] + '.gif'
-        # Determine cut levels for contrast stretching from a sample of pixels
-        if min_cut is None or max_cut is None:
-            vmin, vmax = self.cut_levels(min_percent=min_percent,
-                                         max_percent=max_percent,
-                                         sample_start=start,
-                                         sample_stop=stop,
-                                         data_col=data_col)
-        if min_cut is not None:
-            vmin = min_cut
-        if max_cut is not None:
-            vmax = max_cut
         # Determine the first/last frame number and the step size
         frameno_start, frameno_stop = self._frameno_range(start, stop, time_format)
         if step is None:
             step = int((frameno_stop - frameno_start) / 100)
             if step < 1:
                 step = 1
+        # Determine cut levels for contrast stretching from a sample of pixels
+        if min_cut is None or max_cut is None:
+            vmin, vmax = self.cut_levels(min_percent=min_percent,
+                                         max_percent=max_percent,
+                                         sample_start=frameno_start,
+                                         sample_stop=frameno_stop,
+                                         data_col=data_col)
+        if min_cut is not None:
+            vmin = min_cut
+        if max_cut is not None:
+            vmax = max_cut
         # Create the movie frames
         print('Creating {0}'.format(output_fn))
         viz = []
