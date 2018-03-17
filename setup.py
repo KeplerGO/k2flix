@@ -3,8 +3,11 @@ import os
 import sys
 from setuptools import setup
 
-if "publish" in sys.argv[-1]:
-    os.system("python setup.py sdist upload")
+# Prepare and send a new release to PyPI
+if "release" in sys.argv[-1]:
+    os.system("python setup.py sdist")
+    os.system("twine upload dist/*")
+    os.system("rm -rf dist/k2flix*")
     sys.exit()
 
 # Load the __version__ variable without importing the package already
