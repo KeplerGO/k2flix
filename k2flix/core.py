@@ -423,9 +423,12 @@ class TargetPixelFile(object):
 
         transform = (stretch_fn +
                      visualization.ManualInterval(vmin=vmin, vmax=vmax))
-        ax.imshow((255*transform(flx)).astype(int), aspect='auto',
-                   origin='lower', interpolation='nearest',
-                   cmap=cmap, norm=NoNorm())
+        flx_transform = 255 * transform(flx)
+        # Make sure to remove all NaNs!
+        flx_transform[~np.isfinite(flx_transform)] = 0
+        ax.imshow(flx_transform.astype(int), aspect='auto',
+                  origin='lower', interpolation='nearest',
+                  cmap=cmap, norm=NoNorm())
         if annotate:  # Annotate the frame with a timestamp and target name?
             fontsize = 3. * shape[0]
             margin = 0.03
