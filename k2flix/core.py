@@ -196,6 +196,12 @@ class TargetPixelFile(object):
         timestamp : str
             Appropriately formatted timestamp.
         """
+        # In short cadence we need to show more decimal points
+        if self.hdulist[0].header['OBSMODE'].startswith('short'):
+            fmtstring = "{:.4f}"
+        else:
+            fmtstring = "{:.2f}"
+
         if time_format == 'frameno':
             return 'Frame {}'.format(frameno)
         elif time_format == 'ut':
@@ -204,13 +210,13 @@ class TargetPixelFile(object):
             except ValueError:
                 return np.nan
         elif time_format == 'jd':
-            return 'JD {:.2f}'.format(self.jd(frameno))
+            return 'JD ' + fmtstring.format(self.jd(frameno))
         elif time_format == 'mjd':
-            return 'MJD {:.2f}'.format(self.mjd(frameno))
+            return 'MJD ' + fmtstring.format(self.mjd(frameno))
         elif time_format == 'bjd':
-            return 'BJD {:.2f}'.format(self.bjd(frameno))
+            return 'BJD ' + fmtstring.format(self.bjd(frameno))
         elif time_format == 'bkjd':
-            return 'BKJD {:.2f}'.format(self.bkjd(frameno))
+            return 'BKJD ' + fmtstring.format(self.bkjd(frameno))
         elif time_format == 'cadence':
             return 'Cadence {:d}'.format(self.cadenceno(frameno))
 
