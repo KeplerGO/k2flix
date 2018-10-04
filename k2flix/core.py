@@ -59,8 +59,8 @@ KEPLER_QUALITY_FLAGS = {
 # Kepler time functions
 ###
 
-def bkjd_to_bjd(bkjd, offset=2454833.):
-    """Barycentric Kepler Julian Date (BKJD) to Barycentric Julian Date (BJD).
+def bkjd_to_jd(bkjd, offset):
+    """Barycentric Kepler Julian Date (BKJD) to Julian Date (JD).
 
     Kepler Barycentric Julian Day is the value recorded in the 'TIME' column
     in the official Kepler/K2 lightcurve and target pixel files.
@@ -71,14 +71,9 @@ def bkjd_to_bjd(bkjd, offset=2454833.):
     return bkjd + offset
 
 
-def bkjd_to_jd(bkjd, timecorr, timslice):
-    """Convert Barycentric Kepler Julian Date (BKJD) to Julian Date (JD)."""
-    return bkjd_to_bjd(bkjd) - timecorr + (0.25 + 0.62 * (5 - timslice)) / 86400.
-
-
-def bkjd_to_mjd(bkjd, timecorr, timslice):
+def bkjd_to_mjd(bkjd, offset):
     """Convert Barycentric Kepler Julian Date (BKJD) to Modified Julian Date (MJD)."""
-    return bkjd_to_jd(bkjd, timecorr, timslice) - 2400000.5
+    return bkjd_to_jd(bkjd, offset) - 2400000.5
 
 
 ###
@@ -150,23 +145,15 @@ class TargetPixelFile(object):
 
     def bjd(self, frameno=None):
         """Get the Barycentric Julian Date for a given frame."""
-        return bkjd_to_bjd(self.bkjd(frameno))
+        return bkjd_to_jd(self.bkjd(frameno), offset=self.hdulist[1].header['BJDREFI'])
 
     def jd(self, frameno=None):
         """Get the Julian Day for a given frame."""
-        if frameno is None:
-            timecorr = self.hdulist[1].data['TIMECORR']
-        else:
-            timecorr = self.hdulist[1].data['TIMECORR'][frameno]
-        return bkjd_to_jd(self.bkjd(frameno), timecorr, self.hdulist[1].header['TIMSLICE'])
+        return bkjd_to_jd(self.bkjd(frameno), offset=self.hdulist[1].header['BJDREFI'])
 
     def mjd(self, frameno=None):
         """Get the Modified Julian Day for a given frame."""
-        if frameno is None:
-            timecorr = self.hdulist[1].data['TIMECORR']
-        else:
-            timecorr = self.hdulist[1].data['TIMECORR'][frameno]
-        return bkjd_to_mjd(self.bkjd(frameno), timecorr, self.hdulist[1].header['TIMSLICE'])
+        return bkjd_to_mjd(self.bkjd(frameno), offset=self.hdulist[1].header['BJDREFI'])
 
     def time(self, time_format='bkjd'):
         if time_format == 'jd':
@@ -197,7 +184,9 @@ class TargetPixelFile(object):
             Appropriately formatted timestamp.
         """
         # In short cadence we need to show more decimal points
-        if self.hdulist[0].header['OBSMODE'].startswith('short'):
+        if self.hdulist[0].header['TELESCOP'] == 'TESS':
+            fmtstring = "{:.4f}"
+        elif self.hdulist[0].header['OBSMODE'].startswith('short'):
             fmtstring = "{:.4f}"
         else:
             fmtstring = "{:.2f}"
