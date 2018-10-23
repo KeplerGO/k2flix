@@ -389,13 +389,15 @@ class TargetPixelFile(object):
 
         # Determine the figsize and dpi
         shape = list(flx.shape)
+        shape = [shape[1], shape[0]]
         if dpi is None:
             # Twitter timeline requires dimensions between 440x220 and 1024x512
             # so we make 440 the default
             dpi = 440 / float(shape[0])
 
         # libx264 require the height to be divisible by 2, we ensure this here:
-        shape[1] -= ((shape[1] * dpi) % 2) / dpi
+        shape[0] -= ((shape[0] * dpi) % 2) / dpi
+
         # Create the figureand display the flux image using matshow
         fig = pl.figure(figsize=shape, dpi=dpi)
         # Display the image using matshow
