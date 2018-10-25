@@ -341,7 +341,7 @@ class TargetPixelFile(object):
     def create_figure(self, frameno=0, binning=1, dpi=None,
                       stretch='log', vmin=1, vmax=5000,
                       cmap='gray', data_col='FLUX', annotate=True,
-                      time_format='ut', show_flags=False):
+                      time_format='ut', show_flags=False, label=None):
         """Returns a matplotlib Figure object that visualizes a frame.
 
         Parameters
@@ -377,6 +377,9 @@ class TargetPixelFile(object):
         show_flags : boolean, optional
             Show the quality flags?
             (Default: `False`.)
+
+        label : str
+            Label text to show in the bottom left corner of the movie.
 
         Returns
         -------
@@ -430,7 +433,9 @@ class TargetPixelFile(object):
             fontsize = 3. * shape[0]
             margin = 0.03
             # Print target name in lower left corner
-            txt = ax.text(margin, margin, self.objectname,
+            if label is None:
+                label = self.objectname
+            txt = ax.text(margin, margin, label,
                           family="monospace", fontsize=fontsize,
                           color='white', transform=ax.transAxes)
             txt.set_path_effects([path_effects.Stroke(linewidth=fontsize/6.,
@@ -495,7 +500,7 @@ class TargetPixelFile(object):
                    binning=1, fps=15., dpi=None, stretch='log',
                    min_cut=None, max_cut=None, min_percent=1., max_percent=95.,
                    cmap='gray', time_format='ut', show_flags=False, data_col='FLUX',
-                   ignore_bad_frames=True,):
+                   ignore_bad_frames=True, label=None):
         """Save an animation.
 
         Parameters
@@ -557,6 +562,9 @@ class TargetPixelFile(object):
         ignore_bad_frames : boolean, optional
              If `True`, any frames which cannot be rendered will be ignored
              without raising a ``BadKeplerFrame`` exception. Default: `True`.
+
+        label : str
+            Label text to show in the bottom left corner of the movie.
         """
         if output_fn is None:
             output_fn = self.filename.split('/')[-1] + '.gif'
@@ -586,7 +594,7 @@ class TargetPixelFile(object):
                                          dpi=dpi, stretch=stretch,
                                          vmin=vmin, vmax=vmax, cmap=cmap,
                                          data_col=data_col, time_format=time_format,
-                                         show_flags=show_flags)
+                                         show_flags=show_flags, label=label)
                 img = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
                 img = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
                 pl.close(fig)  # Avoids memory leak!
@@ -607,7 +615,7 @@ def k2flix_main(args=None):
     """Script to convert Kepler pixel data (TPF files) to a movie."""
     parser = argparse.ArgumentParser(
         description="Converts a Target Pixel File (TPF) from NASA's "
-                    "Kepler/K2/TESS spacecraft into an animated gif or MPEG-4 movie for human inspection.")
+                    "Kepler or TESS mission into an animated gif or MPEG-4 movie for human inspection.")
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='')
     parser.add_argument('--output', metavar='FILENAME',
@@ -644,6 +652,8 @@ def k2flix_main(args=None):
                                              '(default: gray)')
     parser.add_argument('--flags', action='store_true',
                         help='show the quality flags')
+    parser.add_argument('--label', type=str, default=None,
+                        help='label to show in the bottom left corner (default: objectname)')
     parser.add_argument('tpf_filename', nargs='+',
                         help='path to one or more Target Pixel Files (TPF)')
 
@@ -711,12 +721,14 @@ def k2flix_main(args=None):
                            cmap=args.cmap,
                            time_format=time_format,
                            show_flags=args.flags,
-                           data_col=data_col)
+                           data_col=data_col,
+                           label=args.label)
         except Exception as e:
             if args.verbose:
                 raise e
             else:
                 print('ERROR: {}'.format(e))
+
 
 # Example use
 if __name__ == '__main__':
