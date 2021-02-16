@@ -68,3 +68,6 @@ README.md
 
 .pytest_cache
 
+*.code-workspace
+.python-version
+*.gif
