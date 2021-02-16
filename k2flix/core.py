@@ -113,18 +113,15 @@ class TargetPixelFile(object):
 
     @property
     def objectname(self):
-        try:
-            return self.hdulist[0].header['OBJECT']
-        except KeyError:
-            return ''
-
+        return self.hdulist[0].header.get('OBJECT', '')
+ 
     @property
     def ra(self):
-        return self.hdulist[0].header['RA_OBJ']
+        return self.hdulist[0].header.get('RA_OBJ', '')
 
     @property
     def dec(self):
-        return self.hdulist[0].header['DEC_OBJ']
+        return self.hdulist[0].header.get('DEC_OBJ', '')
 
     def cadenceno(self, frameno=None):
         """Returns the cadence number for a given frame, or all frames."""
@@ -184,9 +181,9 @@ class TargetPixelFile(object):
             Appropriately formatted timestamp.
         """
         # In short cadence we need to show more decimal points
-        if self.hdulist[0].header['TELESCOP'] == 'TESS':
+        if self.hdulist[0].header.get('TELESCOP') == 'TESS':
             fmtstring = "{:.4f}"
-        elif self.hdulist[0].header['OBSMODE'].startswith('short'):
+        elif self.hdulist[0].header.get('OBSMODE', '').startswith('short'):
             fmtstring = "{:.4f}"
         else:
             fmtstring = "{:.2f}"
