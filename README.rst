@@ -88,7 +88,7 @@ To see all the options, use the `--help` argument to see the full usage informat
                   [--step STEP] [--fps FPS] [--binning BINNING] [--dpi DPI]
                   [--stretch STRETCH] [--min_cut MIN_CUT] [--max_cut MAX_CUT]
                   [--min_percent %] [--max_percent %] [--cmap CMAP] [--flags]
-                  [--raw | --background | --cosmic]
+                  [--label LABEL] [--difference] [--raw | --background | --cosmic]
                   [--ut | --jd | --mjd | --bkjd | --cadence]
                   tpf_filename [tpf_filename ...]
 
@@ -122,6 +122,8 @@ To see all the options, use the `--help` argument to see the full usage informat
       --max_percent %    maximum cut percentile (default: 95)
       --cmap CMAP        matplotlib color map name (default: gray)
       --flags            show the quality flags
+      --label LABEL      label to show in the bottom left corner (default: objectname)
+      --difference       show the median-subtracted difference image
       --raw              show the uncalibrated pixel counts ('RAW_CNTS')
       --background       show the background flux ('FLUX_BKG')
       --cosmic           show the cosmic rays ('COSMIC_RAYS')
