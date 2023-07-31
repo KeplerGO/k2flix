@@ -114,7 +114,7 @@ class TargetPixelFile(object):
     @property
     def objectname(self):
         return self.hdulist[0].header.get('OBJECT', '')
- 
+
     @property
     def ra(self):
         return self.hdulist[0].header.get('RA_OBJ', '')
@@ -215,7 +215,8 @@ class TargetPixelFile(object):
                 flags.append(KEPLER_QUALITY_FLAGS[flag])
         return flags
 
-    def flux(self, frameno=0, data_col='FLUX', pedestal=1000.):
+    def flux(self, frameno=0, data_col='FLUX', pedestal=1000.,
+             difference=False):
         """Returns the data for a given frame.
 
         Parameters
@@ -223,26 +224,31 @@ class TargetPixelFile(object):
         frameno : int
             Frame number.
 
-        raw : bool
-            If `True` return the raw counts, if `False` return the calibrated
-            flux. (Default: `False`.)
+        data_col : str
+            Image data to be displayed. (Default: `FLUX`.)
 
         pedestal : float
             Value to add to the pixel counts.  This is useful to help prevent
             the counts from being negative after background subtraction.
             (Default: 1000.)
+
+        difference : bool
+            Whether to subtract data median before displaying.
         """
         # Quick hack for TESS simulated data:
         if (data_col == 'COSMIC_RAYS') and (data_col not in self.hdulist[1].data.columns.names) and ('COSMICS' in self.hdulist[1].data.columns.names):
             data_col = 'COSMICS'
         flux = self.hdulist[1].data[data_col][frameno].copy() + pedestal
+        if difference:
+            flux -= self.subtracted_img
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', message="(.*)invalid value(.*)")
             if data_col != 'COSMIC_RAYS' and np.all(np.isnan(flux)):
                 raise BadKeplerFrame('frame {0}: bad frame'.format(frameno))
         return flux
 
-    def flux_binned(self, frameno=0, binning=1, data_col='FLUX', pedestal=1000):
+    def flux_binned(self, frameno=0, binning=1, data_col='FLUX', pedestal=1000,
+                    difference=False):
         """Returns the co-added data centered on a frame.
 
         Parameters
@@ -262,7 +268,8 @@ class TargetPixelFile(object):
             the counts from being negative after background subtraction.
             (Default: 1000.)
         """
-        flx = self.flux(frameno, data_col=data_col, pedestal=pedestal)
+        flx = self.flux(frameno, data_col=data_col, pedestal=pedestal,
+                        difference=difference)
         framecount = 1
         # Add additional frames if binning was requested
         if binning > 1:
@@ -272,7 +279,8 @@ class TargetPixelFile(object):
                 frameno_to_add = frameno + frameno_offset
                 if frameno_to_add < 0 or frameno_to_add > self.no_frames - 1:
                     continue  # Avoid going out of bounds
-                flx += self.flux(frameno_to_add, data_col=data_col, pedestal=pedestal)
+                flx += self.flux(frameno_to_add, data_col=data_col,
+                                 pedestal=pedestal, difference=difference)
                 framecount += 1
             flx = flx / framecount
             if self.verbose:
@@ -280,7 +288,8 @@ class TargetPixelFile(object):
         return flx
 
     def cut_levels(self, min_percent=1., max_percent=95., data_col='FLUX',
-                   sample_start=None, sample_stop=None, n_samples=3):
+                   sample_start=None, sample_stop=None, n_samples=3,
+                   difference=False):
         """Determine the cut levels for contrast stretching.
 
         For speed, the levels are determined using only `n_samples` number
@@ -301,7 +310,8 @@ class TargetPixelFile(object):
         try:
             sample = np.concatenate(
                                     [
-                                     self.flux(frameno, data_col=data_col)
+                                     self.flux(frameno, data_col=data_col,
+                                               difference=difference)
                                      for frameno
                                      in np.linspace(sample_start, sample_stop,
                                                     n_samples).astype(int)
@@ -315,7 +325,8 @@ class TargetPixelFile(object):
                 try:
                     sample = np.concatenate(
                                     [
-                                     self.flux(frameno, data_col=data_col)
+                                     self.flux(frameno, data_col=data_col,
+                                               difference=difference)
                                      for frameno
                                      in np.random.choice(np.arange(sample_start,
                                                                    sample_stop+1),
@@ -338,7 +349,8 @@ class TargetPixelFile(object):
     def create_figure(self, frameno=0, binning=1, dpi=None,
                       stretch='log', vmin=1, vmax=5000,
                       cmap='gray', data_col='FLUX', annotate=True,
-                      time_format='ut', show_flags=False, label=None):
+                      time_format='ut', show_flags=False, label=None,
+                      difference=False):
         """Returns a matplotlib Figure object that visualizes a frame.
 
         Parameters
@@ -378,6 +390,10 @@ class TargetPixelFile(object):
         label : str
             Label text to show in the bottom left corner of the movie.
 
+        difference : boolean, optiona
+            Show median-subtracted difference image?
+            (Default: `False`.)
+
         Returns
         -------
         image : array
@@ -385,7 +401,8 @@ class TargetPixelFile(object):
             representing an RBG colour image x px wide and y px high.
         """
         # Get the flux data to visualize
-        flx = self.flux_binned(frameno=frameno, binning=binning, data_col=data_col)
+        flx = self.flux_binned(frameno=frameno, binning=binning,
+                               data_col=data_col, difference=difference)
 
         # Determine the figsize and dpi
         shape = list(flx.shape)
@@ -497,7 +514,7 @@ class TargetPixelFile(object):
                    binning=1, fps=15., dpi=None, stretch='log',
                    min_cut=None, max_cut=None, min_percent=1., max_percent=95.,
                    cmap='gray', time_format='ut', show_flags=False, data_col='FLUX',
-                   ignore_bad_frames=True, label=None):
+                   difference=False, ignore_bad_frames=True, label=None):
         """Save an animation.
 
         Parameters
@@ -556,6 +573,10 @@ class TargetPixelFile(object):
         show_flags : boolean, optional
             If `True`, annotate the quality flags if set.
 
+        difference : boolean, optional
+            If `True`, show median-subtracted difference images. Default:
+            `False`.
+
         ignore_bad_frames : boolean, optional
              If `True`, any frames which cannot be rendered will be ignored
              without raising a ``BadKeplerFrame`` exception. Default: `True`.
@@ -571,12 +592,18 @@ class TargetPixelFile(object):
             step = int((frameno_stop - frameno_start) / 100)
             if step < 1:
                 step = 1
+        # If doing difference imaging, store median image in self
+        if difference:
+            self.subtracted_img = np.nanmedian(self.hdulist[1].data[data_col].copy(),
+                                            axis=0)
+
         # Determine cut levels for contrast stretching from a sample of pixels
         if min_cut is None or max_cut is None:
             vmin, vmax = self.cut_levels(min_percent=min_percent,
                                          max_percent=max_percent,
                                          sample_start=frameno_start,
                                          sample_stop=frameno_stop,
+                                         difference=difference,
                                          data_col=data_col)
         if min_cut is not None:
             vmin = min_cut
@@ -591,6 +618,7 @@ class TargetPixelFile(object):
                                          dpi=dpi, stretch=stretch,
                                          vmin=vmin, vmax=vmax, cmap=cmap,
                                          data_col=data_col, time_format=time_format,
+                                         difference=difference,
                                          show_flags=show_flags, label=label)
                 img = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
                 img = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
@@ -653,6 +681,8 @@ def k2flix_main(args=None):
                         help='label to show in the bottom left corner (default: objectname)')
     parser.add_argument('tpf_filename', nargs='+',
                         help='path to one or more Target Pixel Files (TPF)')
+    parser.add_argument('--difference', action='store_true',
+                           help="show the median-subtracted difference image")
 
     datagroup = parser.add_mutually_exclusive_group()
     datagroup.add_argument('--raw', action='store_true',
@@ -719,6 +749,7 @@ def k2flix_main(args=None):
                            time_format=time_format,
                            show_flags=args.flags,
                            data_col=data_col,
+                           difference=args.difference,
                            label=args.label)
         except Exception as e:
             if args.verbose:
